@@ -69,11 +69,13 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ## Sprint 3 — Documentos + Facturación (2 semanas)
 
-### EP-06 — Documentos
+### EP-06 — Documentos ✅ CERRADA 12 may 2026
 
-- [ ] HU-15 PDF presupuesto AgroM (motor pdf-lib + plantilla)
-- [ ] HU-16 PDF albarán de aplicación (motor + plantilla con firma + telemetría + AEMET cruzado)
-- [ ] HU-17 Firma digital canvas del agricultor en finca (tablet)
+- [x] HU-15 Firma digital canvas del agricultor en finca ✅ (SignaturePad vanilla sin libs, mouse+touch, valida PNG data URL)
+- [x] HU-16 PDF albarán de aplicación ✅ (pdf-lib, layout A4 con cliente + operación + parcelas + productos + firma embed + hash SHA-256 + meteo capturado HU-13)
+- [x] HU-17 Storage local PDFs + endpoint `/api/albarans/[code]/pdf` ✅ (filesystem `./storage/albarans/{code}.pdf` gitignored, regen invalida PDF anterior)
+
+> Nota orden HUs EP-06: SDD-05 numeraba HU-15=presupuesto, HU-16=albarán, HU-17=firma. En el repo el orden fue firma → PDF → storage (dependencia natural). HU-15 presupuesto AgroM queda para v1.1 (el albarán cumple compliance; el presupuesto es comercial, no operativo).
 
 ### EP-07 — Facturación Holded
 
