@@ -23,6 +23,40 @@ Formato por entrada:
 
 ---
 
+## 2026-05-12 · IPv4 explícito en DATABASE_URL/REDIS_URL (no `localhost`)
+
+**Contexto:** primer Vitest contra Postgres local tras tests de HU-02 (services.ts).
+**Qué rompió:** `connect ECONNREFUSED ::1:6170` antes que `connect ECONNREFUSED 127.0.0.1:6170`. Node.js / `pg` resuelve `localhost` a IPv6 dual-stack primero (`::1`), pero el bind del container Postgres es IPv4 only (`127.0.0.1:6170`).
+**Solución / patrón adoptado:** usar `127.0.0.1` explícito en `DATABASE_URL` y `REDIS_URL` del `.env.local`. Patrón aplicable a cualquier connection string que ataque al Docker local en macOS. Aplica también a `bullmq`, `redis`, y cualquier cliente Node.
+**Referencia:** `.env.local` del repo. No hace falta tocar el bundle porque allí el `.env.example` muestra `localhost` como template — cada operador ajusta su `.env.local` a `127.0.0.1` localmente.
+
+---
+
+## 2026-05-12 · Zod: orden de transform vs validators (email con trim)
+
+**Contexto:** `loginSchema` aplicaba `.email()` antes de `.transform((v) => v.trim().toLowerCase())`.
+**Qué rompió:** un input `"  JuanCho@SystemRapid.IO  "` falla `.email()` antes de llegar al trim.
+**Solución / patrón adoptado:** usar `.transform(...).pipe(z.string().email(...))` para que la normalización suceda antes de la validación de formato:
+```ts
+email: z
+  .string()
+  .min(1, "Email requerido")
+  .transform((v) => v.trim().toLowerCase())
+  .pipe(z.string().email("Email inválido")),
+```
+**Referencia:** `src/features/auth/schemas.ts`, test `loginSchema > normaliza email a lowercase y trimea`.
+
+---
+
+## 2026-05-12 · Auth.js v5 type augmentation: archivo módulo + import top-level
+
+**Contexto:** extender `User`, `Session`, `JWT` en Auth.js v5 con `id`, `role`, `userId`.
+**Qué rompió:** el primer intento usaba `import("@/...").UserRole` inline para mantener el archivo ambient (sin imports top-level). Resultado: TypeScript ve `declare module "next-auth"` como redefinición y pierde el módulo original (`NextAuthConfig`, `AuthError` desaparecen del namespace `next-auth`).
+**Solución / patrón adoptado:** el `next-auth.d.ts` debe ser **módulo** (con al menos `import` o `export {};` top-level) para que `declare module` actúe como augmentation, no como redefinición. Los callbacks de `auth.config.ts` pueden necesitar type assertions explícitas (`token.role as UserRole`) si TS no resuelve la augmentation en cierto contexto.
+**Referencia:** `src/types/next-auth.d.ts` (versión final con `import type { UserRole }` top-level + `export {};`). `src/auth.config.ts` líneas 27-31 con asserts explícitos.
+
+---
+
 ## 2026-05-11 · Base de Proyectos SRS rige por encima de cualquier SETUP.md de bundle
 
 **Contexto:** aplicación de los bundles `agroops-bootstrap` y `agroops-schema` al repo recién clonado.

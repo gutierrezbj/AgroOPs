@@ -6,28 +6,33 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ---
 
-## Sprint 0 — Setup (1 semana)
+## Sprint 0 — Setup (1 semana) ✅ CERRADO (11-12 may 2026)
 
 - [x] Redactar SDD-01 a SDD-08 (cerrado 11 may 2026)
 - [x] Crear repo `github.com/gutierrezbj/AgroOPs`
-- [ ] Confirmar subdominio producción: `agroops.agrom.es`
-- [ ] Poblar repo con artefactos obligatorios (este archivo + `DESIGN.md` + `CLAUDE.md` + `lessons.md` + `.env.example` + `README.md`)
-- [ ] Bootstrap Mac local (Docker Compose + Postgres+PostGIS + Redis verdes)
-- [ ] Scaffold Next.js 16 + Tailwind 4 + TS strict + Drizzle
-- [ ] CI inicial: lint + typecheck + test (vacío) + build verde
-- [ ] Pre-commit hooks (lint + typecheck)
-- [ ] Identity Sprint **kickoff** (programar sesión)
-- [ ] Provisionar servidor de producción + Caddy + DNS
+- [x] Poblar repo con artefactos obligatorios (este archivo + `DESIGN.md` + `CLAUDE.md` + `lessons.md` + `.env.example` + `README.md`)
+- [x] Bootstrap Mac local (Docker Compose + Postgres+PostGIS + Redis verdes en 127.0.0.1:6170 / 6171)
+- [x] Scaffold Next.js 16 + Tailwind 4 + TS strict + Drizzle
+- [x] Notion: jerarquía completa AgroOps bajo `[SRS] - Técnico` (16 páginas)
+- [x] Catálogo Infra SRS actualizado (offset +170 reservado, siguiente +180)
+- [x] Manifiesto SDD-SRS actualizado (fila AgroOps, v1.8)
+- [x] Cuaderno AgroM actualizado (sección 2.3 AgroOps, v0.3)
+- [x] Discrepancias del bundle Sprint 0 documentadas + 5 fixes upstream aplicados
+- [ ] Confirmar subdominio producción: `agroops.agrom.es` — pendiente DNS Hostinger
+- [ ] CI inicial: lint + typecheck + test (29/29 verde) + build verde — typecheck y tests ya verdes en local, falta GitHub Actions
+- [ ] Pre-commit hooks (lint + typecheck) — pendiente
+- [ ] Identity Sprint **kickoff** (programar sesión) — pendiente
+- [ ] Provisionar servidor de producción + Caddy + DNS — pendiente
 
 ---
 
-## Sprint 1 — Bootstrap + Fleet + Parcelas (2 semanas)
+## Sprint 1 — Bootstrap + Fleet + Parcelas (2 semanas) 🟡 EN CURSO
 
 ### EP-01 — Bootstrap single-tenant
 
-- [ ] HU-01 Migración schema inicial Drizzle (single-tenant, sin `tenant_id`)
-- [ ] HU-02 Auth.js v5 + RBAC (4 roles: admin, piloto, operario, viewer)
-- [ ] HU-03 Seed inicial AgroM (John, Adriana, JuanCho + flota T50/Mavic 3E/D-RTK 2)
+- [x] HU-01 Migración schema inicial Drizzle (single-tenant, sin `tenant_id`) ✅ 13 tablas, 1 migración `0000_freezing_juggernaut.sql`
+- [x] HU-02 Auth.js v5 + RBAC (4 roles: admin, piloto, operario, viewer) ✅ 12 may 2026, typecheck limpio, 29/29 tests
+- [x] HU-03 Seed inicial AgroM (John, Adriana, JuanCho + flota T50/Mavic 3E/D-RTK 2) ✅ cargado con HU-01
 
 ### EP-02 — Fleet management
 
