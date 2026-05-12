@@ -645,3 +645,304 @@ main button:disabled {
   border-color: var(--border) !important;
   border-radius: var(--radius-base);
 }
+
+/* =============================================================================
+ * Mapa (HU-14) — MapLibre + leyenda
+ * Identity Sprint v1: paleta deep/danger, Plex Sans/Mono, radius-lg.
+ * ========================================================================== */
+
+.map-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 1rem;
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.map-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.map-page__subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  max-width: 60ch;
+}
+
+.map-page__filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.map-page__filter-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-page__filter-form label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.map-page__filter-form select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  background: var(--surface-elevated);
+  color: var(--text);
+  font: inherit;
+  min-width: 16rem;
+}
+
+.map-page__filter-form button {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--accent-action);
+  background: var(--accent-action);
+  color: var(--surface-elevated);
+  border-radius: var(--radius-base);
+  font: inherit;
+  cursor: pointer;
+}
+
+.map-page__filter-form button:hover {
+  filter: brightness(1.1);
+}
+
+.map-page__clear,
+.map-page__back {
+  color: var(--accent-action);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.map-page__clear:hover,
+.map-page__back:hover {
+  text-decoration: underline;
+}
+
+.map-page__canvas {
+  flex: 1 1 auto;
+  min-height: 32rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+  position: relative;
+}
+
+.map-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 32rem;
+}
+
+.map-view--compact {
+  min-height: 18rem;
+}
+
+.map-view__overlay {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  box-shadow: var(--shadow-subtle);
+  z-index: 2;
+}
+
+.map-view__overlay--error {
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
+}
+
+/* MapLibre Popup integrado con paleta AgroOps */
+.map-view__popup .maplibregl-popup-content {
+  background: var(--surface-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-card);
+  padding: 0.85rem 1rem 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  max-width: 22rem;
+}
+
+.map-view__popup .maplibregl-popup-tip {
+  border-top-color: var(--surface-elevated);
+}
+
+.map-view__popup .maplibregl-popup-close-button {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  padding: 0 0.35rem;
+}
+
+.map-popup__title {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+  color: var(--text-strong);
+}
+
+.map-popup__meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 0.85rem;
+  margin: 0;
+}
+
+.map-popup__meta > div {
+  display: contents;
+}
+
+.map-popup__meta dt {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.map-popup__meta dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1rem 0.95rem;
+  box-shadow: var(--shadow-card);
+  font-size: 0.875rem;
+  z-index: 2;
+  max-width: 18rem;
+}
+
+.map-legend__title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: 0.01em;
+}
+
+.map-legend__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.map-legend__row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.map-legend__row input[type="checkbox"] {
+  accent-color: var(--accent-action);
+}
+
+.map-legend__swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 0.85rem;
+  border-radius: 3px;
+  opacity: 0.45;
+  border: 1px solid currentColor;
+}
+
+.map-legend__swatch--dashed {
+  border-style: dashed;
+}
+
+.map-legend__label {
+  color: var(--text);
+}
+
+.map-legend__count {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.map-legend__source {
+  margin: 0.7rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.map-legend__badge {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 0.15rem;
+}
+
+.map-legend__badge--ok {
+  background: color-mix(in srgb, var(--accent-ok) 18%, transparent);
+  color: var(--accent-ok);
+}
+
+.map-legend__badge--info {
+  background: color-mix(in srgb, var(--accent-info) 18%, transparent);
+  color: var(--accent-info);
+}
+
+.map-legend__badge--warn {
+  background: color-mix(in srgb, var(--accent-warn) 22%, transparent);
+  color: var(--accent-warn);
+}
+
+.map-legend__timestamp {
+  white-space: nowrap;
+}
+
+/* MapLibre native controls — leve override para alinear con paleta */
+.maplibregl-ctrl-group {
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-subtle) !important;
+}
+
+.maplibregl-ctrl-group button {
+  color: var(--text) !important;
+}
+
+.maplibregl-ctrl-attrib {
+  background: color-mix(in srgb, var(--surface-elevated) 90%, transparent) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.7rem !important;
+}

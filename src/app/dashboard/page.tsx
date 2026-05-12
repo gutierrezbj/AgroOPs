@@ -70,16 +70,20 @@ export default async function DashboardPage() {
             <Link href="/dashboard/missions">Misiones</Link> — state machine
             8 estados, gates de transición, audit log.
           </li>
+          <li>
+            <Link href="/dashboard/map">Mapa operativo</Link> — parcelas
+            SIGPAC + NOTAMs ENAIRE en MapLibre (HU-14 Fase A).
+          </li>
         </ul>
       </section>
 
       <section className="dashboard__placeholder">
         <h2>Pendiente</h2>
         <ul>
-          <li>HU-03 Layout productivo (sidebar por épica) — bloqueado Identity Sprint.</li>
+          <li>HU-03 Layout productivo (sidebar por épica) — Identity Sprint v1 aplicada, falta sidebar productivo.</li>
           <li>
-            <strong>Identity Sprint</strong> bloquea pantalla "lista":
-            tokens del SRS Design System pendientes.
+            HU-14 Fase B — dibujo interactivo de polígonos sobre el mapa
+            integrado en `/dashboard/parcels/new`.
           </li>
         </ul>
       </section>

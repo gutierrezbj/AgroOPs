@@ -63,7 +63,9 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 - [x] HU-12 NOTAMs ENAIRE (cache Redis 15 min + stub fallback sin feed) ✅ 12 may 2026
 - [x] HU-13 AEMET ventana meteorológica (viento, lluvia, temperatura, humedad, flightSuitable) + captura automática en `approved → preflight` ✅ 12 may 2026
-- [ ] HU-14 MapLibre con dibujo interactivo + overlay parcelas + NOTAMs en mapa
+- [~] HU-14 MapLibre con dibujo interactivo + overlay parcelas + NOTAMs en mapa
+  - [x] **Fase A (12 may 2026)** — `/dashboard/map` con MapLibre v5 + react-map-gl v8 (path `/maplibre`), tiles CARTO Voyager (sin API key), overlay parcelas (fill deep + stroke) + NOTAMs (fill danger + stroke dashed), leyenda con toggle on/off + badge source `enaire-live`/`enaire-cache`/`enaire-stub`, popups con paleta AgroOps, filtro por cliente. APIs `/api/parcels/geojson` + `/api/notams/geojson` con auth gate. Auto-fit a bbox de parcelas. 9 tests `features/map/services` (252/252 total).
+  - [ ] **Fase B** — Dibujo interactivo de polígonos custom (sin maplibre-gl-draw) integrado en `/dashboard/parcels/new` reemplazando textarea GeoJSON.
 
 ---
 

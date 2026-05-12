@@ -170,4 +170,22 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 **Solución / patrón adoptado:** scaffoldear en un directorio temporal con nombre lowercase (`mktemp -d` + subdir `agroops`) y luego `rsync -a --exclude='.git/' "$TMP/agroops/" "$REAL/"` al directorio real (preservando el `.git` del clone). El nombre interno del package queda `agroops` (lowercase) aunque la carpeta del repo sea `AgroOPs/` (mixed case). Coherente porque GitHub no distingue mayúsculas en el repo name pero npm sí.
 **Referencia:** flujo de Fase C en `tasks/notion-staging/02-checklist-kickoff-agroops.md`.
 
+## 2026-05-12 · react-map-gl v8: import path `/maplibre` obligatorio
+
+**Contexto:** HU-14 Fase A. Montar MapLibre GL JS dentro de Next.js 16 con `react-map-gl@8.1.1`.
+**Qué se descubrió:** react-map-gl v8 no expone top-level. El paquete declara `exports` con tres rutas (`./mapbox`, `./maplibre`, `./mapbox-legacy`). Importar `from "react-map-gl"` falla con `Module not found`. La librería deja explícita la elección de engine porque la API de Mapbox v3 (paid) y MapLibre v5 (FOSS) diverge en `style` y `events`.
+**Solución / patrón adoptado:** todos los imports cliente usan `from "react-map-gl/maplibre"`. Tipo `LngLatBoundsLike` y `MapMouseEvent` también vienen del subpath. Las layer specifications (`FillLayerSpecification`, `LineLayerSpecification`) sí vienen directo de `maplibre-gl` (el engine). El CSS de los controles (`maplibre-gl/dist/maplibre-gl.css`) se importa en el componente cliente; Next.js 16 lo permite sin warning.
+**Referencia:** `src/features/map/components/MapView.tsx`. Estilo base CARTO Voyager (`https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json`) — gratis sin API key, attribution OSM + CARTO. Para producción comercial con > 100k map loads/mes evaluar Mapbox v3 o self-host tiles (CARTO Free permite uso comercial bajo).
+
+---
+
+## 2026-05-12 · API GeoJSON pública con auth gate ligero (sin RBAC fino)
+
+**Contexto:** HU-14 Fase A. Exponer parcelas como FeatureCollection consumible por el cliente MapLibre.
+**Qué se descubrió:** las parcelas ya están detrás del session-cookie de Auth.js, y el cliente MapLibre hace fetch desde el mismo origen. No hace falta RBAC granular (admin/piloto/operario/viewer) en estas rutas porque cualquier rol autenticado tiene legitimidad para ver el mapa global; el filtrado por cliente lo decide el query param `?clientId=`, no el rol. Distinto del audit log o de mutaciones, donde RBAC sí aplica.
+**Solución / patrón adoptado:** API route con `export const dynamic = "force-dynamic"` + `auth()` gate genérico (401 si no hay sesión). El `parcelsToFeatureCollection()` vive en `features/map/services.ts` para tests puros sin DB. `Cache-Control: private, no-cache` en headers porque las parcelas mutan con cada ABM. Para NOTAMs el cache Redis (TTL 15 min, HU-12) ya da la performance; el HTTP no-cache mantiene el badge `source` (live/cache/stub) sincronizado en cada refresh del mapa.
+**Referencia:** `src/app/api/parcels/geojson/route.ts`, `src/app/api/notams/geojson/route.ts`. Patrón replicable para v1.1 cuando expongamos `parcels/{id}.geojson` individual para PDF embed.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->
