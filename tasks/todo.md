@@ -87,12 +87,14 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ---
 
-## Sprint 4 — Cuaderno PAC + Observabilidad (1 semana)
+## Sprint 4 — Cuaderno PAC + Observabilidad (1 semana) 🟡 EN CURSO
 
-### EP-08 — Cuaderno de campo + cumplimiento
+### EP-08 — Cuaderno de campo + cumplimiento ✅ CERRADA 12 may 2026
 
-- [ ] HU-21 Vista derivada cuaderno de campo agregada por fecha/parcela
-- [ ] HU-22 Export PDF del cuaderno para PAC (formato agregado simple en v1; completo en v1.1)
+- [x] HU-21 Vista derivada cuaderno de campo agregada por fecha/parcela ✅ 12 may 2026 — Service `listFieldNotebookEntries` con SQL raw 8-tabla JOIN (missions × mission_parcels × parcels × clients × mission_phyto × phytosanitary_products × pilots × drones × albarans). Filtra por `dateFrom`/`dateTo`/`clientId`/`parcelId`/`crop`. Sólo incluye misiones `completed` o `invoiced` (no borradores). Devuelve `FieldNotebookEntry[]` con 26 campos exigidos por PAC (RD 1311/2012): fecha, cliente+CIF, parcela SIGPAC, cultivo, área tratada, producto+materia activa+reg MAPA+formulación, lote, dosis con unidad, volumen total, piloto+NIF+ROPO+AESA, dron+SN+registro, NPTA, albarán+SHA-256+signedAt. Helpers `summarizeFieldNotebook` (agregados con conversión ml→L), `formatDose`/`formatTotalAmount`. Página `/dashboard/field-notebook` con tabla responsive (15 columnas) + filtros + resumen + link a albarán PDF.
+- [x] HU-22 Export PDF del cuaderno para PAC ✅ 12 may 2026 — Generación pdf-lib A4 landscape con header (título + filtros aplicados + resumen agregado + timestamp), tabla de 14 columnas con paginación automática (computeRowHeight + nueva página si overflow), zebra striping con `--surface` 50/50, banda deep `#1B4332` en header, mono para códigos/lotes/SIGPAC. Truncación inteligente `truncateToWidth` por columna con elipsis. Footer en cada página con timestamp + número página. Endpoint `/api/field-notebook/pdf` reusa schema de filtros (mismos query params que la página). Filename `cuaderno-campo_YYYY-MM-DD_YYYY-MM-DD.pdf`. 14 tests del summarize + formatters (327/327 total).
+
+**EP-08 cerrada.**
 
 ### EP-09 — Audit + observabilidad
 

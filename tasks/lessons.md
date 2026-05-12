@@ -260,4 +260,26 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-12 · SQL raw con db.execute para multi-join 8 tablas (cuaderno PAC)
+
+**Contexto:** HU-21 vista derivada cuaderno de campo. Cruza missions × mission_parcels × parcels × clients × mission_phyto × phytosanitary_products × pilots × drones × albarans para producir una fila por aplicación-de-producto-en-parcela con 26 columnas.
+**Qué se descubrió:** Drizzle declarative `db.select({...}).from(missions).leftJoin(...).leftJoin(...)` con 8 tablas y alias custom (`COALESCE(m.completed_at, m.started_at)`, `COALESCE(mph.area_covered_ha, mp.area_treated_ha, p.area_hectares)`) genera SQL menos legible y tipos `unknown` después de 4-5 joins. Mantener el shape de retorno tipado se vuelve fricción.
+**Solución / patrón adoptado:** usar `db.execute<Record<string, unknown>>(sql\`SELECT ... FROM ... JOIN ... WHERE ...\`)` con interpolación segura de filtros vía template tags (`sql\`AND m.client_id = ${clientId}::uuid\``). Mantiene parametrización (no string concat) + control total del SQL + un único mapper `rowsToEntries` que devuelve `FieldNotebookEntry[]` tipado. Patrón replicable para futuros reportes complejos (cuaderno mensual, agregados por cliente, etc.). Compromiso: perdemos la garantía estática de que los `AS \"camelCase\"` aliases coinciden con `keyof FieldNotebookEntry` — vivible si los tests cubren el mapeo en runtime con datos seed.
+**Referencia:** `src/features/field-notebook/services.ts` — `listFieldNotebookEntries`. Drizzle ORM v0.x soporta el patrón nativamente sin escape; los placeholders `${var}` siempre van como parámetros prepared statement.
+
+---
+
+## 2026-05-12 · pdf-lib paginación con computeRowHeight y truncateToWidth
+
+**Contexto:** HU-22 export PDF cuaderno PAC. A4 landscape, 14 columnas, filas con altura variable (algunas tienen 2-3 líneas: cliente+CIF, parcela+SIGPAC, operador+ROPO+AESA). El PDF debe paginar correctamente con nueva página + repetir header de tabla.
+**Qué se descubrió:** pdf-lib no tiene layout engine. Cada celda se dibuja con `page.drawText(x, y)` posición absoluta. Hay que calcular manualmente: (1) altura de cada fila según número de líneas máximas entre sus columnas; (2) si la siguiente fila no cabe antes de `MARGIN_BOTTOM + FOOTER_HEIGHT`, crear nueva página + redibujar header. Sin truncación los textos largos overflow el ancho de columna.
+**Solución / patrón adoptado:**
+- `computeRowHeight(entry)`: itera todas las columnas, cuenta `\n` y devuelve `12 + (maxLines-1)*9 + 4`.
+- `truncateToWidth(text, font, maxWidth)`: bucle `while` que recorta caracteres hasta que `font.widthOfTextAtSize(text + "…", 7) <= maxWidth`. Suficientemente rápido para tablas <10k filas.
+- Loop principal: `for (entry of entries) { rowHeight = compute(); if (y - rowHeight < limit) { footer + newPage + tableHeader }; drawRow(); y -= rowHeight; }`.
+- Zebra striping: `i % 2 === 1` con `--surface` mezclado vía `rgb(0.965, 0.953, 0.918)` (color-mix no existe en pdf-lib; hardcodeamos el valor mezclado).
+**Referencia:** `src/features/field-notebook/pdf.ts` — funciones `computeRowHeight`, `truncateToWidth`, `drawRow`. El patrón aplicable a cualquier reporte tabular largo. Si en el futuro nos pasamos a Puppeteer/Playwright PDF, este código se descarta — pero v1.0 pdf-lib es suficiente y mantiene cero deps del navegador.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->
