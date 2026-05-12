@@ -10,6 +10,7 @@ import { auth } from "@/auth";
 import { hasRole, ROLES } from "@/lib/rbac";
 import { ClientForm } from "@/features/clients/components/ClientForm";
 import { ClientTypeBadge } from "@/features/clients/components/ClientTypeBadge";
+import { HoldedSyncPanel } from "@/features/clients/components/HoldedSyncPanel";
 import { getClient } from "@/features/clients/services";
 
 export const metadata = { title: "AgroOps — Cliente" };
@@ -41,7 +42,13 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
       </header>
 
       {canWrite ? (
-        <ClientForm mode="edit" client={client} />
+        <>
+          <ClientForm mode="edit" client={client} />
+          <HoldedSyncPanel
+            clientId={client.id}
+            currentContactId={client.holdedContactId}
+          />
+        </>
       ) : (
         <section>
           <p>
@@ -59,6 +66,14 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
             <dd>{client.contactPerson ?? "—"}</dd>
             <dt>Email</dt>
             <dd>{client.contactEmail ?? "—"}</dd>
+            <dt>Holded contact ID</dt>
+            <dd>
+              {client.holdedContactId ? (
+                <code>{client.holdedContactId}</code>
+              ) : (
+                "—"
+              )}
+            </dd>
           </dl>
         </section>
       )}

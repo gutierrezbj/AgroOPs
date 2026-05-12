@@ -81,7 +81,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ### EP-07 — Facturación Holded
 
-- [ ] HU-18 Conexión API key con Holded
+- [x] HU-18 Conexión API key con Holded ✅ 12 may 2026 — Cliente HTTP `holdedFetch` con timeout 10s + auth header `key`, errores tipados `HoldedError` (not-configured / unauthorized / rate-limited / server-error / network / bad-response). `pingHolded` para healthcheck. `findOrCreateHoldedContact` con 4 ramas idempotentes (cache → taxId → email → create). Service `syncClientToHolded` persiste `holdedContactId` en DB + audit `client.holded_linked`/`client.holded_created`. Server Action `syncClientToHoldedAction` con RBAC WRITERS. UI `HoldedSyncPanel` en `/dashboard/clients/[id]` con badge estado + form sync + hints por reason. Endpoint diagnóstico `/api/admin/holded/ping` solo admin. 20 tests con `vi.stubGlobal('fetch')` → 277/277 total.
 - [ ] HU-19 Disparo automático de factura al cerrar albarán
 - [ ] HU-20 Sincronización estado factura → misión (`invoices_ref`)
 

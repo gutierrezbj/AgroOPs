@@ -1,13 +1,18 @@
 /**
- * AgroOps — clients services (HU-06)
+ * AgroOps — clients services (HU-06 + HU-18)
  *
- * Lógica de negocio de clientes. La integración real con Holded
- * (`holdedContactId` sync) llega en HU-19; aquí sólo persistimos el id si
- * el operador lo pega manualmente.
+ * Lógica de negocio de clientes. **HU-18**: integración real con Holded
+ * vía `syncClientToHolded()` que llama `findOrCreateHoldedContact()` y
+ * persiste el `holdedContactId` en DB para que HU-19 pueda disparar
+ * facturas sin re-buscar el contacto cada vez.
  */
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { clients, type Client, type NewClient } from "@/db/schema/clients";
+import {
+  findOrCreateHoldedContact,
+  type HoldedContact,
+} from "@/server/integrations/holded";
 import type {
   CreateClientInput,
   ListClientFilters,
@@ -89,4 +94,69 @@ export async function updateClient(
     .where(eq(clients.id, id))
     .returning();
   return updated ?? null;
+}
+
+/**
+ * Resultado de la sincronización con Holded. Permite al caller distinguir
+ * para auditar la acción y mostrar el feedback adecuado en UI.
+ */
+export interface SyncClientToHoldedResult {
+  client: Client;
+  contact: HoldedContact;
+  /** true si se creó nuevo en Holded; false si se enlazó a uno existente. */
+  created: boolean;
+  /** true si el cliente ya tenía holdedContactId cacheado (no hubo round trip). */
+  cached: boolean;
+}
+
+/**
+ * HU-18 — Sincroniza el cliente AgroOps con el directorio de contactos
+ * Holded:
+ *
+ * 1. Carga el cliente desde DB.
+ * 2. Llama `findOrCreateHoldedContact` (estrategia idempotente: cache → taxId → email → create).
+ * 3. Persiste `holdedContactId` si no estaba ya cacheado.
+ *
+ * El caller (server action) se encarga de:
+ * - RBAC (admin u operario).
+ * - logAudit("client.holded_synced" | "client.holded_created").
+ * - revalidatePath de la ruta del cliente.
+ *
+ * Lanza `HoldedError` (kind="not-configured"|"unauthorized"|...) si Holded
+ * rechaza la operación. La action las captura y devuelve mensaje legible.
+ */
+export async function syncClientToHolded(
+  clientId: string,
+): Promise<SyncClientToHoldedResult> {
+  const client = await getClient(clientId);
+  if (!client) {
+    throw new Error(`syncClientToHolded: cliente ${clientId} no existe`);
+  }
+
+  const wasCached = Boolean(client.holdedContactId);
+  const { contact, created } = await findOrCreateHoldedContact({
+    name: client.name,
+    taxId: client.taxId,
+    contactEmail: client.contactEmail,
+    contactPhone: client.contactPhone,
+    holdedContactId: client.holdedContactId,
+  });
+
+  // Si era cache hit en findOrCreate, no necesitamos persistir.
+  let updated: Client = client;
+  if (!wasCached) {
+    const [persisted] = await db
+      .update(clients)
+      .set({ holdedContactId: contact.id })
+      .where(eq(clients.id, clientId))
+      .returning();
+    if (persisted) updated = persisted;
+  }
+
+  return {
+    client: updated,
+    contact,
+    created,
+    cached: wasCached,
+  };
 }

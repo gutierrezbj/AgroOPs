@@ -206,4 +206,31 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-12 · Zod `.default()`: usar `z.input` no `z.infer` para tipo de input
+
+**Contexto:** HU-18 integración Holded. La función `createHoldedContact` acepta `CreateHoldedContactInput` con campo `type` que en el schema tiene `.default("client")`. El caller debe poder omitir ese campo y dejar que Zod aplique el default.
+**Qué rompió:** `type CreateHoldedContactInput = z.infer<typeof schema>` infiere el tipo **output** del parse, donde `.default()` ya aplicó el valor y `type` queda como required. TypeScript exige al caller pasarlo siempre. El test `createHoldedContact({ name: "X", code: "A1" })` falla con "Property 'type' is missing".
+**Solución / patrón adoptado:** usar `z.input<typeof schema>` para tipos de entrada (donde `.default()` deja el campo opcional) y `z.infer` (alias de `z.output`) solo para resultados de `.parse()`. Regla general: si una función pública acepta input que pasa por Zod, expone `z.input`. Si devuelve datos validados, expone `z.infer`. Aplicable a todos los schemas Zod con `.default()`/`.transform()`.
+**Referencia:** `src/server/integrations/holded.ts` — `CreateHoldedContactInput = z.input<typeof createHoldedContactInputSchema>`. Patrón replicable cuando un schema mezcla optional input + non-null output.
+
+---
+
+## 2026-05-12 · Tests con `vi.stubGlobal('fetch')` y módulo dinámico para env vars
+
+**Contexto:** HU-18 tests Holded sin tocar el API real. Necesitamos mockear `global.fetch` y además que el módulo `holded.ts` relea `process.env.HOLDED_API_KEY` cada vez que el test cambia la env (p.ej. para el caso "not-configured" hay que tener `delete process.env.HOLDED_API_KEY` antes de importar).
+**Qué se descubrió:** `holded.ts` captura `const HOLDED_API_KEY = process.env.HOLDED_API_KEY` en top-level. Esto se evalúa **una sola vez** cuando Vitest carga el módulo. Si en un test `delete process.env.HOLDED_API_KEY` antes de llamar a `holdedFetch`, la constante interna sigue conservando el valor previo (test pollution entre cases).
+**Solución / patrón adoptado:** en los tests, importar el módulo **dinámicamente** después de configurar env: `vi.resetModules(); return import("./holded");` envuelto en helper `loadHolded()`. Esto fuerza a Vitest a re-evaluar el módulo y releer `process.env`. Combinado con `vi.stubGlobal("fetch", mockFn)` + `vi.restoreAllMocks()` en `afterEach` queda limpio. Patrón replicable para AEMET, ENAIRE, cualquier integración con env vars top-level.
+**Referencia:** `src/server/integrations/holded.test.ts` — `loadHolded()` helper. La alternativa "no capturar en top-level y leer `process.env.X` en cada función" tiene peor performance y permite que un cambio runtime cambie comportamiento mid-request (no deseado en server actions Next.js). Mantener el patrón "top-level + dynamic import en test".
+
+---
+
+## 2026-05-12 · HoldedError tipado con `kind` discriminante (no string genérica)
+
+**Contexto:** HU-18 cliente HTTP para Holded. Las llamadas pueden fallar por 6+ motivos: env no configurada, 401, 429, 5xx, timeout, JSON malformado. La UI necesita mostrar mensajes específicos: "configura .env.local" vs "revisa tu API key" vs "Holded está caído".
+**Qué se descubrió:** una excepción genérica `throw new Error("Holded fail")` pierde el contexto; la UI sólo puede mostrar `.message`. Para hints accionables (ej. "configura tu .env") hay que distinguir motivos. Usar `instanceof` + `err.status` funciona pero es frágil porque "no configured" no tiene status HTTP.
+**Solución / patrón adoptado:** clase `HoldedError extends Error` con campo readonly `kind: "not-configured" | "unauthorized" | "rate-limited" | "server-error" | "network" | "bad-response"`. La server action captura `if (err instanceof HoldedError) { return { reason: err.kind } }`. El cliente React mapea `reason` a hints específicos (función `reasonHint()` en HoldedSyncPanel). Patrón replicable para AEMET / ENAIRE / DroneHub: cada integración exporta su propia clase `XError` con su unión de `kind` literal.
+**Referencia:** `src/server/integrations/holded.ts` — `HoldedError`, `pingHolded()` que mapea kind a result discriminado.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->

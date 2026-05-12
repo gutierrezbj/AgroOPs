@@ -1087,3 +1087,126 @@ main button:disabled {
   font-size: 0.8rem;
   line-height: 1.5;
 }
+
+/* =============================================================================
+ * Holded sync panel (HU-18) — facturación cliente
+ * ========================================================================== */
+
+.holded-sync {
+  margin: 1.5rem 0 0;
+  padding: 1.15rem 1.25rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-subtle);
+}
+
+.holded-sync__header h2 {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-strong);
+}
+
+.holded-sync__header p {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  max-width: 60ch;
+}
+
+.holded-sync__status {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0 0 1rem;
+  align-items: center;
+}
+
+.holded-sync__status > dt {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.holded-sync__status > dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.holded-sync__badge {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.holded-sync__badge--ok {
+  background: color-mix(in srgb, var(--accent-ok) 22%, transparent);
+  color: var(--accent-ok);
+}
+
+.holded-sync__badge--warn {
+  background: color-mix(in srgb, var(--accent-warn) 25%, transparent);
+  color: var(--accent-warn);
+}
+
+.holded-sync__muted {
+  color: var(--text-muted);
+}
+
+.holded-sync__form {
+  margin: 0.5rem 0 0;
+}
+
+.holded-sync__btn {
+  appearance: none;
+  background: var(--accent-action);
+  color: var(--surface-elevated);
+  border: 1px solid var(--accent-action);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-base);
+  font: inherit;
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.holded-sync__btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.holded-sync__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.holded-sync__success {
+  margin: 0.75rem 0 0;
+  padding: 0.55rem 0.75rem;
+  background: color-mix(in srgb, var(--accent-ok) 12%, var(--surface-elevated));
+  border-left: 3px solid var(--accent-ok);
+  border-radius: var(--radius-base);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.holded-sync__error {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  background: color-mix(in srgb, var(--accent-danger) 10%, var(--surface-elevated));
+  border-left: 3px solid var(--accent-danger);
+  border-radius: var(--radius-base);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.holded-sync__hint {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
