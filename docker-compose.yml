@@ -1,0 +1,39 @@
+name: agroops
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: agroops-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agroops
+      POSTGRES_PASSWORD: agroops_dev
+      POSTGRES_DB: agroops
+    ports:
+      - "5432:5432"
+    volumes:
+      - agroops_pg_data:/var/lib/postgresql/data
+      - ./scripts/db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agroops -d agroops"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: agroops-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - agroops_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  agroops_pg_data:
+  agroops_redis_data:

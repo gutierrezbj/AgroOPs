@@ -1,0 +1,25 @@
+# =============================================================================
+# AgroOps — docker-compose override
+# Aplica la Convención de Puertos SRS (offset +170, bind 127.0.0.1).
+#
+# Ref: Catálogo de Infraestructura SRS — Marzo 2026
+#   - Próximo offset libre tras ARGOS (+160) = +170
+#   - 3xxx frontend / 4xxx API / 5xxx internal / 6xxx DBs
+#   - TODOS los puertos en 127.0.0.1:HOST:CONTENEDOR (nunca 0.0.0.0)
+#
+# El docker-compose.yml original del bundle Sprint 0 expone 5432 y 6379 sin
+# bind a 127.0.0.1, violando la convención. Este override usa `!override`
+# para REEMPLAZAR la lista `ports` (en vez de extenderla como hace el merge
+# por defecto de docker-compose).
+#
+# Respetado automáticamente por `docker compose up`.
+# =============================================================================
+
+services:
+  postgres:
+    ports: !override
+      - "127.0.0.1:6170:5432"
+
+  redis:
+    ports: !override
+      - "127.0.0.1:6171:6379"

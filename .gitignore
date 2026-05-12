@@ -1,0 +1,63 @@
+# =============================================================================
+# AgroOps — .gitignore
+# =============================================================================
+
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+.vercel/
+next-env.d.ts
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Drizzle (mantener migrations, ignorar journal local de dev)
+src/db/migrations/meta/_journal_local.json
+
+# Backups locales
+backups/
+*.dump
+*.sql.gz
+
+# Secrets nunca
+*.pem
+*.key
+.secrets/
