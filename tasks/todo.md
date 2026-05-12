@@ -61,9 +61,9 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ### EP-05 — Mapa y meteo
 
-- [ ] HU-12 Mapa MapLibre con NOTAMs ENAIRE en tiempo real
-- [ ] HU-13 AEMET ventana meteorológica para municipio (viento, lluvia, apto-vuelo)
-- [ ] HU-14 Overlay parcelas SIGPAC sobre el mapa
+- [x] HU-12 NOTAMs ENAIRE (cache Redis 15 min + stub fallback sin feed) ✅ 12 may 2026
+- [x] HU-13 AEMET ventana meteorológica (viento, lluvia, temperatura, humedad, flightSuitable) + captura automática en `approved → preflight` ✅ 12 may 2026
+- [ ] HU-14 MapLibre con dibujo interactivo + overlay parcelas + NOTAMs en mapa
 
 ---
 

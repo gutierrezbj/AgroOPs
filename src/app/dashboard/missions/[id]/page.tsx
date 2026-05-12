@@ -156,12 +156,76 @@ export default async function MissionDetailPage({ params }: MissionPageProps) {
               ? `${parseFloat(mission.areaTreatedHa).toFixed(2)} ha`
               : "—"}
           </dd>
-          <dt>Snapshot meteo</dt>
-          <dd>{mission.weatherSnapshot ? "✓ capturado" : "—"}</dd>
           <dt>Telemetría</dt>
           <dd>{mission.telemetry ? "✓ capturada" : "—"}</dd>
         </dl>
       </section>
+
+      {mission.weatherSnapshot && (
+        <section>
+          <h2>Snapshot meteorológico AEMET (HU-13)</h2>
+          <p>
+            <small>
+              Capturado{" "}
+              {new Date(mission.weatherSnapshot.capturedAt).toLocaleString(
+                "es-ES",
+              )}
+              {mission.weatherSnapshot.stationId && (
+                <>
+                  {" · estación "}
+                  <code>{mission.weatherSnapshot.stationId}</code>
+                </>
+              )}
+            </small>
+          </p>
+          <dl>
+            <dt>Viento</dt>
+            <dd>
+              {mission.weatherSnapshot.windSpeedMs != null
+                ? `${mission.weatherSnapshot.windSpeedMs.toFixed(1)} m/s`
+                : "—"}
+              {mission.weatherSnapshot.windDirectionDeg != null && (
+                <> · dir {mission.weatherSnapshot.windDirectionDeg}°</>
+              )}
+            </dd>
+            <dt>Precipitación</dt>
+            <dd>
+              {mission.weatherSnapshot.precipitationMm != null
+                ? `${mission.weatherSnapshot.precipitationMm} mm`
+                : "—"}
+            </dd>
+            <dt>Temperatura</dt>
+            <dd>
+              {mission.weatherSnapshot.temperatureC != null
+                ? `${mission.weatherSnapshot.temperatureC} °C`
+                : "—"}
+            </dd>
+            <dt>Humedad</dt>
+            <dd>
+              {mission.weatherSnapshot.humidityPct != null
+                ? `${mission.weatherSnapshot.humidityPct} %`
+                : "—"}
+            </dd>
+            <dt>Apto para vuelo</dt>
+            <dd>
+              {mission.weatherSnapshot.flightSuitable === true
+                ? "✓ sí"
+                : mission.weatherSnapshot.flightSuitable === false
+                  ? "✗ no"
+                  : "—"}
+              {typeof mission.weatherSnapshot.raw === "object" &&
+                mission.weatherSnapshot.raw != null &&
+                "stub" in mission.weatherSnapshot.raw && (
+                  <small>
+                    {" "}
+                    (stub — define <code>AEMET_API_KEY</code> en{" "}
+                    <code>.env.local</code> para datos reales)
+                  </small>
+                )}
+            </dd>
+          </dl>
+        </section>
+      )}
 
       {canWrite && mission.status === "in_flight" && (
         <section>

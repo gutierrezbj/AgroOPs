@@ -25,6 +25,7 @@ import { parcels, type Parcel } from "@/db/schema/parcels";
 import { pilots, type Pilot } from "@/db/schema/pilots";
 import { nextMissionCode } from "@/lib/mission-codes";
 import { NPTA_DROVINCI } from "@/lib/constants";
+import { captureWeatherForCoordinates } from "@/server/integrations/aemet";
 import type {
   CompleteMissionInput,
   CreateMissionInput,
@@ -289,10 +290,42 @@ export async function setMissionParcels(
 }
 
 /**
+ * Devuelve el centroide (lat/lng) de la primera parcela de la misión usando
+ * PostGIS `ST_Centroid`. Lo usa `transitionMission` para llamar a AEMET con
+ * coordenadas reales en `approved → preflight`. Sin parcelas → null.
+ */
+export async function getMissionPrimaryCentroid(
+  missionId: string,
+): Promise<{ lat: number; lng: number } | null> {
+  const result = await db.execute<{ lat: string; lng: string }>(sql`
+    SELECT
+      ST_Y(ST_Centroid(p.geometry))::text AS lat,
+      ST_X(ST_Centroid(p.geometry))::text AS lng
+    FROM mission_parcels mp
+    JOIN parcels p ON p.id = mp.parcel_id
+    WHERE mp.mission_id = ${missionId}::uuid
+    ORDER BY p.name ASC
+    LIMIT 1
+  `);
+  const row = result.rows[0];
+  if (!row) return null;
+  return {
+    lat: parseFloat(row.lat),
+    lng: parseFloat(row.lng),
+  };
+}
+
+/**
  * Aplica una transición de estado. Construye el `GateContext` cargando
  * el dron, piloto y conteo de parcels asociado. Si el gate falla, devuelve
  * los errores sin tocar la BD. Si pasa, persiste el cambio y aplica
  * side-effects (startedAt, completedAt).
+ *
+ * Side-effect HU-13: en `approved → preflight`, si la misión aún no tiene
+ * `weatherSnapshot`, intenta capturar uno automáticamente desde AEMET usando
+ * el centroide de la primera parcela (o Madrid centro como fallback). El
+ * snapshot se persiste ANTES de evaluar el gate, así éste puede decidir
+ * con datos reales si `flightSuitable=false` bloquea.
  */
 export async function transitionMission(
   id: string,
@@ -301,7 +334,7 @@ export async function transitionMission(
   | { ok: true; mission: Mission; gate: GateResult }
   | { ok: false; error: string; gate?: GateResult }
 > {
-  const mission = await db.query.missions.findFirst({
+  let mission = await db.query.missions.findFirst({
     where: eq(missions.id, id),
   });
   if (!mission) return { ok: false, error: "Misión no encontrada" };
@@ -312,6 +345,31 @@ export async function transitionMission(
       ok: false,
       error: `Transición ${from} → ${targetStatus} no permitida`,
     };
+  }
+
+  // ─── HU-13: captura automática de meteo en approved → preflight ──────
+  if (
+    from === "approved" &&
+    targetStatus === "preflight" &&
+    !mission.weatherSnapshot
+  ) {
+    const centroid = await getMissionPrimaryCentroid(id);
+    const coords = centroid ?? { lat: 40.4168, lng: -3.7038 }; // fallback Madrid
+    try {
+      const snapshot = await captureWeatherForCoordinates(
+        coords.lat,
+        coords.lng,
+      );
+      const [refreshed] = await db
+        .update(missions)
+        .set({ weatherSnapshot: snapshot })
+        .where(eq(missions.id, id))
+        .returning();
+      if (refreshed) mission = refreshed;
+    } catch (err) {
+      console.warn("[transitionMission] captura meteo falló:", err);
+      // No bloqueamos: el gate decidirá con snapshot=null (warning soft).
+    }
   }
 
   // Cargar contexto para el gate

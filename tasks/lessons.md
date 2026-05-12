@@ -23,6 +23,23 @@ Formato por entrada:
 
 ---
 
+## 2026-05-12 · AEMET OpenData: arquitectura asíncrona en 2 fetches
+
+**Contexto:** integración real AEMET para HU-13 (snapshot meteo en preflight).
+**Qué se descubrió:** AEMET no devuelve los datos directamente. La respuesta inicial al endpoint `/api/...` con `api_key` en headers trae `{ estado: 200, datos: "URL_TEMPORAL", metadatos: "..." }`. Hay que hacer un **segundo fetch** a la `URL_TEMPORAL` para obtener el JSON real con la predicción.
+**Solución / patrón adoptado:** envolver el flujo en `aemetFetch(url, apiKey)` que devuelve el JSON parseado, y un wrapper `fetchFromAemetMunicipio` que encadena los 2 fetches: indirecto → directo. El timeout (8s) cubre las 2 etapas.
+**Referencia:** `src/server/integrations/aemet.ts` — `fetchFromAemetMunicipio`. Si en v1.1 añadimos resolución municipio desde lat/lng, mantener el mismo patrón.
+
+---
+
+## 2026-05-12 · Side-effect ANTES del gate: captura automática meteo en transitionMission
+
+**Contexto:** state machine gate `approved → preflight` chequea `weatherSnapshot.flightSuitable !== false`. Si nunca lo capturamos antes, el gate siempre da warning soft (sin bloquear) y el operador llega a in_flight sin verificar meteo.
+**Solución / patrón adoptado:** dentro de `transitionMission`, antes de cargar el `GateContext`, si `from === "approved" && to === "preflight" && !mission.weatherSnapshot`, **llamar AEMET, persistir el snapshot, releer la misión** y dejar que el gate decida con datos reales. Si AEMET falla, log + continuar (snapshot=null, warning soft, no bloqueo). Centroide se calcula con PostGIS `ST_Centroid` sobre la primera parcela; fallback Madrid centro si no hay parcelas. Aplicable a cualquier integración que dependa del estado destino (Holded en `completed → invoiced` seguirá el mismo patrón en HU-19).
+**Referencia:** `src/features/missions/services.ts` — bloque "HU-13" en `transitionMission` + helper `getMissionPrimaryCentroid`.
+
+---
+
 ## 2026-05-12 · Next.js 16 endurece `"use server"`: sólo async functions, nada más
 
 **Contexto:** smoke visual del HU-04 tras añadir CSS estructural. JuanCho abre `/login` en el navegador y ve Runtime Error: *"A 'use server' file can only export async functions, found object."*
