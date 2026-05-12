@@ -24,7 +24,8 @@ export default function FleetIndexPage() {
             aeronaves (T50, Mavic 3E, D-RTK 2).
           </li>
           <li>
-            Pilotos (HU-05) — pendiente Sprint 1.
+            <Link href="/dashboard/fleet/pilots">Pilotos</Link> · ABM con
+            cualificaciones AESA, ROPO, seguro y médico.
           </li>
         </ul>
       </nav>

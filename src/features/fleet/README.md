@@ -6,8 +6,10 @@ Drones (T50, Mavic 3E, D-RTK 2) y pilotos (John con cualificaciones AESA + ROPO)
 
 ## Estado
 
-- ✅ **HU-04 ABM drones** — cerrada 12 may 2026 (typecheck limpio, 35 tests verde).
-- ⬜ **HU-05 ABM pilotos** — pendiente (mismo patrón aplicado a `src/db/schema/pilots.ts`).
+- ✅ **HU-04 ABM drones** — cerrada 12 may 2026 (typecheck limpio, 35 tests).
+- ✅ **HU-05 ABM pilotos** — cerrada 12 may 2026 (typecheck limpio, 35 tests, helper `evaluateCredentials` para badges de caducidad).
+
+**EP-02 Fleet management completa.**
 
 ## Schemas relacionados
 
@@ -19,20 +21,32 @@ Drones (T50, Mavic 3E, D-RTK 2) y pilotos (John con cualificaciones AESA + ROPO)
 ```
 fleet/
   README.md                    # este archivo
-  schemas.ts                   # Zod createDroneSchema, updateDroneSchema, droneIdSchema, listDroneFiltersSchema
-  services.ts                  # listDrones, getDrone, getDroneBySerial, createDrone, updateDrone, archiveDrone, restoreDrone
-  schemas.test.ts              # 20 tests (happy paths + business rules + edge cases)
-  services.test.ts             # 12 tests integración Postgres local
+  schemas.ts                   # drones Zod
+  services.ts                  # drones services
+  schemas.test.ts / services.test.ts
   actions/
-    create-drone.ts            # createDroneAction — RBAC WRITERS + audit drone.created
-    update-drone.ts            # updateDroneAction — RBAC WRITERS + audit drone.updated
-    archive-drone.ts           # archiveDroneAction — RBAC ADMIN_ONLY + audit drone.archived
+    create-drone.ts + .types.ts
+    update-drone.ts + .types.ts
+    archive-drone.ts + .types.ts
   components/
-    DronesTable.tsx            # Server Component, recibe Drone[]
-    DroneForm.tsx              # Client, useActionState, modo create/edit
-    DroneStatusBadge.tsx       # Server Component pequeño
-    ArchiveDroneButton.tsx     # Client, sólo visible para admins
+    DronesTable.tsx / DroneForm.tsx / DroneStatusBadge.tsx / ArchiveDroneButton.tsx
+  pilots/
+    schemas.ts                 # pilots Zod (NIF, AESA, ROPO levels)
+    services.ts                # pilots services + evaluateCredentials helper
+    schemas.test.ts / services.test.ts
+    actions/
+      create-pilot.ts + .types.ts
+      update-pilot.ts + .types.ts
+      archive-pilot.ts + .types.ts
+    components/
+      PilotsTable.tsx / PilotForm.tsx / PilotStatusBadge.tsx / ArchivePilotButton.tsx
 ```
+
+Páginas que consumen el feature:
+
+- `src/app/dashboard/fleet/page.tsx` — índice flota.
+- `src/app/dashboard/fleet/drones/{page,new/page,[id]/page}.tsx` (HU-04).
+- `src/app/dashboard/fleet/pilots/{page,new/page,[id]/page}.tsx` (HU-05).
 
 Páginas que consumen el feature:
 
@@ -41,7 +55,9 @@ Páginas que consumen el feature:
 - `src/app/dashboard/fleet/drones/new/page.tsx` — crear (RBAC `WRITERS`).
 - `src/app/dashboard/fleet/drones/[id]/page.tsx` — editar + archivar.
 
-## Business rules (HU-04)
+## Business rules
+
+### HU-04 (drones)
 
 Aplicadas en `createDroneSchema.superRefine`:
 
@@ -50,6 +66,16 @@ Aplicadas en `createDroneSchema.superRefine`:
 - `easaClass="n_a"` ⇒ `applicationCapable=false` (D-RTK 2 y similares no son UAS).
 - `serialNumber` UNIQUE (constraint DB + check explícito antes del insert).
 - `mtomGrams` entero positivo ≤ 200 kg.
+
+### HU-05 (pilotos)
+
+Aplicadas en `pilots/schemas.ts.superRefine`:
+
+- `ropoQualified=true` ⇒ requiere `ropoNumber + ropoLevel + ropoExpiresAt` (sin estos datos no podemos demostrar la habilitación frente a auditoría PAC).
+- `nif` normalizado a trim + uppercase, validado contra regex `[A-Z0-9]{8,10}` (cubre DNI, NIE y passports UE).
+- `nif` UNIQUE (DB + check explícito antes del insert).
+- Todas las caducidades en formato YYYY-MM-DD.
+- Helper `evaluateCredentials(pilot, today)` clasifica AESA / ROPO / seguro / médico como `expired` / `warning` (≤30 días) / `ok`. Lo consumen `PilotStatusBadge` (badge agregado) y la vista de edición (lista detallada).
 
 ## Notas
 
