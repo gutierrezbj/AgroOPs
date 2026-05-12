@@ -36,7 +36,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ### EP-02 — Fleet management
 
-- [ ] HU-04 ABM drones (T50, Mavic 3E, D-RTK 2) con MTOM, EASA class, seguros
+- [x] HU-04 ABM drones (T50, Mavic 3E, D-RTK 2) con MTOM, EASA class, seguros ✅ 12 may 2026
 - [ ] HU-05 ABM pilotos con licencia AESA, ROPO, seguro, horas vuelo, fechas caducidad
 
 ### EP-03 — Parcelas y catálogo

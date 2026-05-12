@@ -23,6 +23,24 @@ Formato por entrada:
 
 ---
 
+## 2026-05-12 · Auth.js v5 + cookies: `localhost` ≠ `127.0.0.1` para el cliente
+
+**Contexto:** smoke test E2E del login HU-02 con curl.
+**Qué rompió:** primer intento con `curl http://127.0.0.1:3000/api/auth/callback/credentials` devolvía `302 → http://localhost:3000/` (login fallaba). Causa: `AUTH_URL=http://localhost:3000` en `.env.local`, así que Auth.js setea cookies con domain `localhost`. Cuando llamas desde `127.0.0.1`, las cookies no aplican.
+**Solución / patrón adoptado:** usar el mismo host en cliente que el del `AUTH_URL`. En tests E2E con curl o Playwright, mantener consistencia `localhost` ↔ `localhost`. Para Postgres (driver `pg`) la lección anterior pedía `127.0.0.1` (evitar dual-stack IPv6); para HTTP cookies, lo opuesto: pegar al host del AUTH_URL.
+**Referencia:** smoke test 12 may 2026 → `GET /api/auth/session` retornó user completo (id/email/role admin) una vez alineado a `localhost`.
+
+---
+
+## 2026-05-12 · Next.js 16: `middleware.ts` deprecated → `proxy.ts`
+
+**Contexto:** primer `pnpm dev` con HU-02. Warning en stdout: *"The middleware file convention is deprecated. Please use proxy instead."*
+**Qué se descubrió:** Next.js 16 introduce `proxy.ts` como reemplazo de `middleware.ts`. La API y el `export default` son idénticos; sólo el nombre del archivo cambia. El runtime sigue aceptando `middleware.ts` con warning, internamente lo trata como `proxy.ts` (se ve en el log de request: `proxy.ts: 2ms`).
+**Solución / patrón adoptado:** renombrar `src/middleware.ts` → `src/proxy.ts` cuando sea conveniente. El cambio es trivial y elimina el warning. **Aplazado** porque el sistema de permisos del agente lo malinterpretó como "remover capa de seguridad". Hacerlo a mano cuando JuanCho lo decida.
+**Referencia:** [Next.js 16 docs — middleware to proxy](https://nextjs.org/docs/messages/middleware-to-proxy).
+
+---
+
 ## 2026-05-12 · IPv4 explícito en DATABASE_URL/REDIS_URL (no `localhost`)
 
 **Contexto:** primer Vitest contra Postgres local tras tests de HU-02 (services.ts).
