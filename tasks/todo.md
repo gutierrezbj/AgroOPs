@@ -51,7 +51,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ---
 
-## Sprint 2 — Mission state machine + Mapa y meteo (2 semanas)
+## Sprint 2 — Mission state machine + Mapa y meteo (2 semanas) ✅ CERRADO 12 may 2026
 
 ### EP-04 — Mission state machine ✅ CERRADA 12 may 2026
 
@@ -63,9 +63,9 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 - [x] HU-12 NOTAMs ENAIRE (cache Redis 15 min + stub fallback sin feed) ✅ 12 may 2026
 - [x] HU-13 AEMET ventana meteorológica (viento, lluvia, temperatura, humedad, flightSuitable) + captura automática en `approved → preflight` ✅ 12 may 2026
-- [~] HU-14 MapLibre con dibujo interactivo + overlay parcelas + NOTAMs en mapa
-  - [x] **Fase A (12 may 2026)** — `/dashboard/map` con MapLibre v5 + react-map-gl v8 (path `/maplibre`), tiles CARTO Voyager (sin API key), overlay parcelas (fill deep + stroke) + NOTAMs (fill danger + stroke dashed), leyenda con toggle on/off + badge source `enaire-live`/`enaire-cache`/`enaire-stub`, popups con paleta AgroOps, filtro por cliente. APIs `/api/parcels/geojson` + `/api/notams/geojson` con auth gate. Auto-fit a bbox de parcelas. 9 tests `features/map/services` (252/252 total).
-  - [ ] **Fase B** — Dibujo interactivo de polígonos custom (sin maplibre-gl-draw) integrado en `/dashboard/parcels/new` reemplazando textarea GeoJSON.
+- [x] HU-14 MapLibre con dibujo interactivo + overlay parcelas + NOTAMs en mapa ✅ 12 may 2026 — **EP-05 Mapa y meteo completa**
+  - [x] **Fase A** — `/dashboard/map` con MapLibre v5 + react-map-gl v8 (path `/maplibre`), tiles CARTO Voyager (sin API key), overlay parcelas (fill deep + stroke) + NOTAMs (fill danger + stroke dashed), leyenda con toggle on/off + badge source `enaire-live`/`enaire-cache`/`enaire-stub`, popups con paleta AgroOps, filtro por cliente. APIs `/api/parcels/geojson` + `/api/notams/geojson` con auth gate. Auto-fit a bbox de parcelas. 9 tests `features/map/services`.
+  - [x] **Fase B** — Dibujo interactivo custom (sin lib externa): hook puro `usePolygonDraw` + `buildClosedRing` con epsilon IEEE 754 (5 tests). Componente `ParcelDrawMap` con 3 layers (fill terra + stroke + vertex dots blancos con borde terra), toolbar (Cerrar/Deshacer/Reset + contador), Esc deshace, parcelas existentes desaturadas como referencia. Integrado en ParcelForm como sección colapsable solo en modo create. Al cerrar polígono popula el textarea GeoJSON con `JSON.stringify(geojson, null, 2)` + dispatch `input` event. 257/257 tests verde.
 
 ---
 

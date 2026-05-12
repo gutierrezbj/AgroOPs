@@ -946,3 +946,144 @@ main button:disabled {
   color: var(--text-muted) !important;
   font-size: 0.7rem !important;
 }
+
+/* =============================================================================
+ * Parcela: drawer de dibujo interactivo (HU-14 Fase B)
+ * Usa terra --brand-accent como color del polígono en construcción
+ * (literal acción de marca sobre el lienzo). Parcelas existentes se
+ * muestran desaturadas en deep para evitar confusión visual.
+ * ========================================================================== */
+
+.parcel-form__draw-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.parcel-form__draw-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface-elevated);
+  color: var(--text);
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-base);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.parcel-form__draw-btn:hover {
+  border-color: var(--accent-action);
+  background: var(--surface);
+}
+
+.parcel-form__draw-btn[aria-expanded="true"] {
+  border-color: var(--accent-action);
+  color: var(--accent-action);
+}
+
+.parcel-form__draw-hint {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.parcel-form__draw-canvas {
+  margin: 0.5rem 0 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow-subtle);
+}
+
+.parcel-draw {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-elevated);
+}
+
+.parcel-draw__map {
+  position: relative;
+  height: 28rem;
+  min-height: 24rem;
+}
+
+.parcel-draw__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.parcel-draw__counter {
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.parcel-draw__counter .mono {
+  color: var(--brand-accent, #E07A3C);
+  font-size: 1rem;
+}
+
+.parcel-draw__hint {
+  color: var(--text-muted);
+  font-style: normal;
+  font-size: 0.8rem;
+}
+
+.parcel-draw__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.parcel-draw__btn {
+  appearance: none;
+  font: inherit;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: filter 120ms ease, background-color 120ms ease;
+}
+
+.parcel-draw__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.parcel-draw__btn--ghost {
+  background: var(--surface-elevated);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.parcel-draw__btn--ghost:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.parcel-draw__btn--primary {
+  background: var(--accent-action);
+  color: var(--surface-elevated);
+  border-color: var(--accent-action);
+}
+
+.parcel-draw__btn--primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.parcel-draw__instructions {
+  margin: 0;
+  padding: 0.55rem 0.85rem 0.75rem;
+  background: color-mix(in srgb, var(--surface) 60%, var(--surface-elevated));
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}

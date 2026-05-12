@@ -3,11 +3,13 @@
 /**
  * AgroOps — ParcelForm
  *
- * Form de parcela con geometría GeoJSON pegada en textarea. HU-14 añadirá
- * dibujo interactivo con MapLibre; en v1 esto es suficiente para validar
- * el flow completo de aplicación PAC.
+ * Form de parcela con geometría GeoJSON pegada en textarea. **HU-14 Fase B**:
+ * en modo `create` se ofrece un drawer colapsable con MapLibre interactivo
+ * (`ParcelDrawMap`) que popula el textarea al cerrar el polígono. El
+ * textarea se mantiene para fine-tune manual o pegar GeoJSON externo
+ * (SIGPAC / Google Earth / QGIS).
  */
-import { useActionState } from "react";
+import { useRef, useState, useActionState } from "react";
 import { createParcelAction } from "../actions/create-parcel";
 import {
   initialCreateParcelState,
@@ -19,6 +21,8 @@ import {
   type UpdateParcelState,
 } from "../actions/update-parcel.types";
 import type { ParcelWithGeoJSON } from "../services";
+import type { PolygonGeoJSON } from "../schemas";
+import { ParcelDrawMap } from "@/features/map/components/ParcelDrawMap";
 
 interface ClientOption {
   id: string;
@@ -104,6 +108,23 @@ function SharedFields({
     ? JSON.stringify(parcel.geometry, null, 2)
     : "";
 
+  // HU-14 Fase B — sólo en create. En edit el textarea pre-cargado es la
+  // forma estable de fine-tune (v1.1 añadirá drag de vertices).
+  const [selectedClientId, setSelectedClientId] = useState<string>(
+    parcel?.clientId ?? "",
+  );
+  const [drawOpen, setDrawOpen] = useState(false);
+  const geometryRef = useRef<HTMLTextAreaElement>(null);
+
+  function handlePolygonComplete(geojson: PolygonGeoJSON) {
+    if (!geometryRef.current) return;
+    geometryRef.current.value = JSON.stringify(geojson, null, 2);
+    // Triggear input event para que aria-invalid se reevalúe si hay un
+    // listener; React no observa cambios programáticos a defaultValue.
+    geometryRef.current.dispatchEvent(new Event("input", { bubbles: true }));
+    setDrawOpen(false);
+  }
+
   return (
     <fieldset disabled={pending}>
       <legend>
@@ -120,6 +141,7 @@ function SharedFields({
           required
           defaultValue={parcel?.clientId ?? ""}
           aria-invalid={errors.clientId ? "true" : "false"}
+          onChange={(e) => setSelectedClientId(e.currentTarget.value)}
         >
           <option value="" disabled>
             Selecciona cliente
@@ -156,6 +178,38 @@ function SharedFields({
 
       <h3>Geometría</h3>
 
+      {mode === "create" && (
+        <div className="parcel-form__draw-toggle">
+          <button
+            type="button"
+            onClick={() => setDrawOpen((v) => !v)}
+            className="parcel-form__draw-btn"
+            aria-expanded={drawOpen}
+            aria-controls="parcel-draw-section"
+          >
+            {drawOpen
+              ? "▼ Cerrar mapa de dibujo"
+              : "▶ Dibujar en mapa interactivo"}
+          </button>
+          <span className="parcel-form__draw-hint">
+            O pega el GeoJSON directamente en el textarea de abajo.
+          </span>
+        </div>
+      )}
+
+      {mode === "create" && drawOpen && (
+        <section
+          id="parcel-draw-section"
+          aria-label="Mapa interactivo de dibujo"
+          className="parcel-form__draw-canvas"
+        >
+          <ParcelDrawMap
+            onPolygonComplete={handlePolygonComplete}
+            clientId={selectedClientId || undefined}
+          />
+        </section>
+      )}
+
       <label htmlFor="geometry">
         GeoJSON Polygon *{" "}
         <small>
@@ -163,6 +217,7 @@ function SharedFields({
           &quot;Polygon&quot;, coordinates lat/lng WGS84)
         </small>
         <textarea
+          ref={geometryRef}
           id="geometry"
           name="geometry"
           rows={10}

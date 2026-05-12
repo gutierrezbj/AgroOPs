@@ -188,4 +188,22 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-12 · React imperative textarea population: dispatchEvent('input') después de .value =
+
+**Contexto:** HU-14 Fase B. El `ParcelDrawMap` cierra el polígono y necesita poblar el `<textarea name="geometry">` del ParcelForm para que el form submit lo envíe al server action.
+**Qué se descubrió:** React no observa cambios programáticos a `inputRef.current.value`. Asignar `geometryRef.current.value = JSON.stringify(...)` actualiza el DOM pero no dispara los listeners de React (controlled o uncontrolled con `defaultValue` + `onChange`). El form submit funciona porque lee el DOM final, pero cualquier listener `onInput`/`onChange` queda silenciado.
+**Solución / patrón adoptado:** después de asignar `.value`, hacer `el.dispatchEvent(new Event("input", { bubbles: true }))`. Esto sincroniza React con el cambio nativo. Funciona porque React mete sus listeners en el bubble del root y SyntheticEvents normalizados se reactivan con eventos nativos `bubbles: true`. Patrón replicable para cualquier integración cliente→form (HU-15 firma → hidden input ya lo usa también).
+**Referencia:** `src/features/parcels/components/ParcelForm.tsx` — `handlePolygonComplete()`.
+
+---
+
+## 2026-05-12 · Polygon ring closure con epsilon IEEE 754
+
+**Contexto:** HU-14 Fase B. La función `buildClosedRing(vertices)` debe cerrar el anillo del polígono GeoJSON (primer punto = último). Surge la cuestión: si el usuario clickea exactamente el primer vertex como cierre, ¿cómo detectarlo?
+**Qué se descubrió:** comparación directa con `===` falla por ruido de doble precisión IEEE 754. Sumar/restar latitudes en cascada de transformaciones (lng/lat de MapLibre → state setter → buildClosedRing) puede introducir errores del orden de 1e-15. Comparar con tolerancia es obligatorio.
+**Solución / patrón adoptado:** epsilon 1e-9 (≈ 0.1 mm a la latitud de España). Suficientemente estricto para no aceptar clicks "vecinos" como cierre, suficientemente laxo para tolerar el ruido FP. Función `sameVertex(a, b)` con `Math.abs(a[0]-b[0]) < 1e-9 && Math.abs(a[1]-b[1]) < 1e-9`. Si el usuario hizo doble click cerca del origen, la lib decide cerrar; si clickeó claramente en otro sitio, no.
+**Referencia:** `src/features/map/hooks/usePolygonDraw.ts` — `sameVertex()` + `buildClosedRing()`. 5 tests cubren los 4 casos: <3 puntos, anillo abierto, anillo ya cerrado, ruido FP.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->
