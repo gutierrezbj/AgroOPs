@@ -62,6 +62,10 @@ export default async function DashboardPage() {
             <Link href="/dashboard/phytosanitary">Catálogo fitosanitario</Link>
             {" "}— lotes de productos fitosanitarios.
           </li>
+          <li>
+            <Link href="/dashboard/parcels">Parcelas SIGPAC</Link> — geometría
+            PostGIS, área autocalculada.
+          </li>
         </ul>
       </section>
 
@@ -69,7 +73,6 @@ export default async function DashboardPage() {
         <h2>Pendiente Sprint 1</h2>
         <ul>
           <li>HU-03 Layout productivo (sidebar por épica) — bloqueado Identity Sprint.</li>
-          <li>HU-07 ABM parcelas SIGPAC (geometría PostGIS).</li>
           <li>
             <strong>Identity Sprint</strong> bloquea pantalla "lista":
             tokens del SRS Design System pendientes.

@@ -41,9 +41,13 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ### EP-03 — Parcelas y catálogo
 
-- [ ] HU-06 ABM parcelas con geometría SIGPAC (carga manual desde ref. catastral + import polígono)
-- [ ] HU-07 ABM clientes (cooperativas, ATRIA, agricultores, comunidades de regantes)
-- [ ] HU-08 ABM catálogo fitosanitario manual (producto + materia activa + lote + caducidad + dosis)
+- [x] **HU-06 ABM clientes** (cooperativas, ATRIA, agricultores, comunidades de regantes) ✅ 12 may 2026
+- [x] **HU-07 ABM parcelas** con geometría SIGPAC (PostGIS Polygon SRID 4326, área autocalculada con ST_Area) ✅ 12 may 2026
+- [x] **HU-08 ABM catálogo fitosanitario** manual (producto + materia activa + lote + caducidad + dosis) ✅ 12 may 2026
+
+> **Nota orden HUs en EP-03:** SDD-05 numeraba HU-06=parcelas, HU-07=clientes. En el repo se invirtió porque clientes son prerequisito de parcelas (FK parcels.clientId). En el repo HU-06=clientes, HU-07=parcelas. Reflejado aquí.
+
+**EP-03 Parcelas y catálogo completa.**
 
 ---
 
