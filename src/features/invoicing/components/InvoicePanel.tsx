@@ -19,6 +19,11 @@ import {
   initialDispatchInvoiceState,
   type DispatchInvoiceState,
 } from "../actions/dispatch-invoice.types";
+import { syncInvoiceStatusAction } from "../actions/sync-invoice";
+import {
+  initialSyncInvoiceState,
+  type SyncInvoiceState,
+} from "../actions/sync-invoice.types";
 
 interface InvoicePanelProps {
   missionId: string;
@@ -132,25 +137,92 @@ export function InvoicePanel({
         </dl>
       )}
 
-      {showDispatchButton && (
-        <form action={formAction} className="invoice-panel__form">
-          <input type="hidden" name="missionId" value={missionId} />
-          <button
-            type="submit"
-            disabled={pending}
-            className="invoice-panel__btn"
-          >
-            {pending
-              ? "Disparando…"
-              : effective && effective.status === "error"
-                ? "Reintentar facturación"
-                : "Disparar facturación"}
-          </button>
-        </form>
-      )}
+      <div className="invoice-panel__actions">
+        {showDispatchButton && (
+          <form action={formAction} className="invoice-panel__form">
+            <input type="hidden" name="missionId" value={missionId} />
+            <button
+              type="submit"
+              disabled={pending}
+              className="invoice-panel__btn"
+            >
+              {pending
+                ? "Disparando…"
+                : effective && effective.status === "error"
+                  ? "Reintentar facturación"
+                  : "Disparar facturación"}
+            </button>
+          </form>
+        )}
+
+        {canDispatch &&
+          effective &&
+          (effective.status === "issued" || effective.status === "paid") && (
+            <SyncInvoiceButton missionId={missionId} />
+          )}
+      </div>
 
       <DispatchFeedback state={state} pending={pending} />
     </section>
+  );
+}
+
+function SyncInvoiceButton({ missionId }: { missionId: string }) {
+  const [state, formAction, pending] = useActionState(
+    syncInvoiceStatusAction,
+    initialSyncInvoiceState,
+  );
+  return (
+    <div className="invoice-panel__sync">
+      <form action={formAction} className="invoice-panel__form">
+        <input type="hidden" name="missionId" value={missionId} />
+        <button
+          type="submit"
+          disabled={pending}
+          className="invoice-panel__btn invoice-panel__btn--ghost"
+        >
+          {pending ? "Sincronizando…" : "↻ Refrescar estado desde Holded"}
+        </button>
+      </form>
+      <SyncFeedback state={state} pending={pending} />
+    </div>
+  );
+}
+
+function SyncFeedback({
+  state,
+  pending,
+}: {
+  state: SyncInvoiceState;
+  pending: boolean;
+}) {
+  if (pending) return null;
+  if (state.ok) {
+    if (state.changed) {
+      return (
+        <p role="status" className="invoice-panel__success">
+          Estado actualizado: <strong>{state.newStatus}</strong>
+          {state.paidAt && (
+            <>
+              {" "}
+              · pagada {new Date(state.paidAt).toLocaleString("es-ES")}
+            </>
+          )}
+        </p>
+      );
+    }
+    return (
+      <p role="status" className="invoice-panel__sync-noop">
+        Sin cambios — Holded reporta el mismo estado (
+        <code>{state.newStatus}</code>).
+      </p>
+    );
+  }
+  if (!state.error) return null;
+  return (
+    <div className="invoice-panel__feedback-error" role="alert">
+      <strong>Error al sincronizar:</strong> {state.error}
+    </div>
   );
 }
 

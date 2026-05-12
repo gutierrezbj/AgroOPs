@@ -425,14 +425,105 @@ export async function createHoldedInvoice(
 }
 
 // ============================================================================
-// HU-20 — Sincronización de estado de factura (stub)
+// HU-20 — Sincronización de estado de factura
 // ============================================================================
 
+/**
+ * Subset de la respuesta de GET /documents/invoice/{id}. Holded devuelve
+ * muchos campos (líneas, contacto, banco, ...); aquí sólo los que afectan
+ * a `invoices_ref` de AgroOps: estado de pago + número + URL + importe.
+ *
+ * Holded usa varios shapes según versión del API. Lo más fiable:
+ * - `status` ∈ {0=draft, 1=issued/pendiente, 2=accepted, 3=paid, 4=cancelled, 5=overdue}
+ *   (mapping aproximado — verificar en docs Holded antes de v1.1).
+ * - `paid` boolean en algunas variantes.
+ * - `paymentsTotal` o `paid` para detectar pago.
+ *
+ * En v1 mapeamos defensivamente: si `paid:true` o `status===3` → pagada.
+ * Si `status===4` → cancelada. Resto → issued (ya emitida, esperando pago).
+ */
+const holdedInvoiceStatusResponseSchema = z.object({
+  id: z.string().optional(),
+  invoiceNum: z.union([z.string(), z.number()]).optional(),
+  status: z.union([z.string(), z.number()]).optional(),
+  paid: z.union([z.boolean(), z.number()]).optional(),
+  paymentsTotal: z.number().optional(),
+  total: z.number().optional(),
+  currency: z.string().optional(),
+  paidAt: z.number().optional(), // unix ts si Holded lo devuelve
+});
+
+export interface HoldedInvoiceSnapshot {
+  /** Estado normalizado AgroOps. Mapea el campo `invoice_status` enum de DB. */
+  status: "issued" | "paid" | "cancelled";
+  /** Si está pagada, instante de pago (best-effort: paidAt → updated_at). */
+  paidAt: Date | null;
+  /** Importe total (con IVA) según Holded. */
+  amount: number | null;
+  /** Número factura (puede haber cambiado si el operador la editó en Holded). */
+  invoiceNumber: string | null;
+  currency: string;
+  /** Indica si el snapshot detectó pago (paid=true o status=3). */
+  isPaid: boolean;
+  /** Indica si la factura está cancelada en Holded. */
+  isCancelled: boolean;
+}
+
+/**
+ * HU-20 — Lee el estado actual de una factura en Holded y lo normaliza.
+ * No persiste — eso lo hace el service `syncInvoiceStatusForMission`.
+ */
 export async function syncHoldedInvoiceStatus(
-  _invoiceId: string,
-): Promise<{ status: string; paidAt?: Date | null }> {
-  throw new HoldedError(
-    "server-error",
-    "syncHoldedInvoiceStatus: pendiente HU-20.",
+  invoiceId: string,
+): Promise<HoldedInvoiceSnapshot> {
+  if (!invoiceId) {
+    throw new HoldedError(
+      "bad-response",
+      "syncHoldedInvoiceStatus: invoiceId requerido",
+    );
+  }
+  const raw = await holdedFetch(
+    `/documents/invoice/${encodeURIComponent(invoiceId)}`,
+    { method: "GET" },
   );
+  const parsed = holdedInvoiceStatusResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new HoldedError(
+      "bad-response",
+      `Holded GET invoice respondió con shape inesperado: ${parsed.error.issues[0]?.message ?? ""}`,
+    );
+  }
+  const data = parsed.data;
+
+  // Detección de pago: aceptamos `paid:true`, `paid:1`, o `status===3`.
+  const isPaid =
+    data.paid === true ||
+    data.paid === 1 ||
+    data.status === 3 ||
+    data.status === "3";
+
+  // Cancelación: `status===4` (o 'cancelled' si Holded devuelve string).
+  const isCancelled =
+    data.status === 4 ||
+    data.status === "4" ||
+    String(data.status ?? "").toLowerCase() === "cancelled";
+
+  const status: HoldedInvoiceSnapshot["status"] = isCancelled
+    ? "cancelled"
+    : isPaid
+      ? "paid"
+      : "issued";
+
+  return {
+    status,
+    paidAt: data.paidAt ? new Date(data.paidAt * 1000) : null,
+    amount: data.total ?? null,
+    invoiceNumber:
+      typeof data.invoiceNum === "number"
+        ? String(data.invoiceNum)
+        : (data.invoiceNum ?? null),
+    currency: data.currency ?? "EUR",
+    isPaid,
+    isCancelled,
+  };
 }

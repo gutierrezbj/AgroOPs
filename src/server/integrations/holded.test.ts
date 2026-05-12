@@ -450,6 +450,145 @@ describe("createHoldedInvoice (HU-19)", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// syncHoldedInvoiceStatus (HU-20)
+// ---------------------------------------------------------------------------
+describe("syncHoldedInvoiceStatus (HU-20)", () => {
+  it("normaliza paid:true → status='paid'", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 200,
+        json: {
+          id: "inv_abc",
+          invoiceNum: "2026-1042",
+          status: 3,
+          paid: true,
+          total: 136.13,
+          currency: "EUR",
+          paidAt: 1715520000,
+        },
+      }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_abc");
+    expect(result.status).toBe("paid");
+    expect(result.isPaid).toBe(true);
+    expect(result.amount).toBe(136.13);
+    expect(result.invoiceNumber).toBe("2026-1042");
+    expect(result.paidAt).toBeInstanceOf(Date);
+  });
+
+  it("normaliza status=3 sin paid:true → status='paid'", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({ status: 200, json: { status: 3, total: 100 } }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_x");
+    expect(result.status).toBe("paid");
+  });
+
+  it("normaliza status=4 → status='cancelled'", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({ status: 200, json: { status: 4 } }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_x");
+    expect(result.status).toBe("cancelled");
+    expect(result.isCancelled).toBe(true);
+  });
+
+  it("normaliza status='cancelled' string → cancelled", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({ status: 200, json: { status: "cancelled" } }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_x");
+    expect(result.status).toBe("cancelled");
+  });
+
+  it("default 'issued' si no hay paid ni cancelled", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({ status: 200, json: { status: 1, total: 50 } }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_x");
+    expect(result.status).toBe("issued");
+    expect(result.isPaid).toBe(false);
+  });
+
+  it("paidAt es null si Holded no lo devuelve", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({ status: 200, json: { status: 3, paid: true } }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_x");
+    expect(result.paidAt).toBeNull();
+  });
+
+  it("EUR default si Holded no devuelve currency", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({ status: 200, json: { status: 1 } }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_x");
+    expect(result.currency).toBe("EUR");
+  });
+
+  it("invoiceNum numérico → string normalizado", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({ status: 200, json: { status: 1, invoiceNum: 42 } }),
+    );
+    const result = await syncHoldedInvoiceStatus("inv_x");
+    expect(result.invoiceNumber).toBe("42");
+  });
+
+  it("lanza HoldedError si invoiceId vacío", async () => {
+    const { syncHoldedInvoiceStatus, HoldedError } = await loadHolded();
+    await expect(syncHoldedInvoiceStatus("")).rejects.toBeInstanceOf(
+      HoldedError,
+    );
+  });
+
+  it("lanza HoldedError bad-response si shape inesperado", async () => {
+    const { syncHoldedInvoiceStatus, HoldedError } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 200,
+        // status como objeto no es válido por el schema → bad-response
+        json: { status: { weird: true } },
+      }),
+    );
+    try {
+      await syncHoldedInvoiceStatus("inv_x");
+      expect.fail("debió lanzar");
+    } catch (err) {
+      expect((err as InstanceType<typeof HoldedError>).kind).toBe(
+        "bad-response",
+      );
+    }
+  });
+
+  it("URL del GET incluye el invoiceId encodeado", async () => {
+    const { syncHoldedInvoiceStatus } = await loadHolded();
+    const spy = mockFetch({ status: 200, json: { status: 1 } });
+    vi.stubGlobal("fetch", spy);
+    await syncHoldedInvoiceStatus("inv with spaces");
+    const call = spy.mock.calls[0] as unknown as [string, RequestInit];
+    expect(call[0]).toMatch(/inv%20with%20spaces$/);
+    expect(call[1].method).toBe("GET");
+  });
+});
+
 describe("findOrCreateHoldedContact", () => {
   const client = {
     name: "Cooperativa La Solana",

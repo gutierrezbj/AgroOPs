@@ -28,7 +28,9 @@ import { albarans, type Albaran } from "@/db/schema/albarans";
 import {
   createHoldedInvoice,
   HoldedError,
+  syncHoldedInvoiceStatus,
   type HoldedInvoiceResult,
+  type HoldedInvoiceSnapshot,
 } from "@/server/integrations/holded";
 import { getInvoiceVatPct, getPricePerHaEur } from "@/lib/constants";
 
@@ -327,5 +329,88 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-// Re-export HoldedError para que las actions puedan distinguir
+// ============================================================================
+// HU-20 — Sincronización estado factura → AgroOps
+// ============================================================================
+
+export interface SyncInvoiceStatusResult {
+  invoiceRef: InvoiceRef;
+  snapshot: HoldedInvoiceSnapshot;
+  /** True si el sync cambió el status en `invoices_ref` (paid/cancelled). */
+  changed: boolean;
+}
+
+/**
+ * HU-20 — Pregunta a Holded el estado actual de la factura de una misión y
+ * actualiza `invoices_ref` si cambió (issued → paid o issued → cancelled).
+ *
+ * Útil para:
+ * - Botón "Sincronizar estado" en `/dashboard/missions/[id]` (manual).
+ * - Job batch que recorre invoices con status='issued' antiguas y refresca
+ *   (HU-25 observabilidad lo puede planificar como tarea diaria).
+ *
+ * Casos:
+ * - Si no existe `invoices_ref` o no tiene `holdedInvoiceId` → lanza
+ *   `InvoicingError("mission-not-found", ...)` (no hay nada que sincronizar).
+ * - Si Holded falla → re-throw `HoldedError` (caller decide).
+ * - Si el snapshot coincide con el status persistido → `changed: false`.
+ * - Si el snapshot indica `paid` o `cancelled` → actualiza row y `changed: true`.
+ *
+ * No transita la misión a otros estados (`paid` no cambia mission.status,
+ * que ya quedó `invoiced`; cancelled tampoco propaga a mission.cancelled —
+ * eso requiere decisión del operador).
+ */
+export async function syncInvoiceStatusForMission(
+  missionId: string,
+): Promise<SyncInvoiceStatusResult> {
+  const existing = await getInvoiceForMission(missionId);
+  if (!existing) {
+    throw new InvoicingError(
+      "mission-not-found",
+      `La misión ${missionId} no tiene factura registrada todavía.`,
+    );
+  }
+  if (!existing.holdedInvoiceId) {
+    throw new InvoicingError(
+      "mission-not-found",
+      `La factura local (invoices_ref ${existing.id}) no tiene holdedInvoiceId — ¿se quedó en status=error?`,
+    );
+  }
+
+  const snapshot = await syncHoldedInvoiceStatus(existing.holdedInvoiceId);
+
+  // Detectar si el status cambió
+  const changed = existing.status !== snapshot.status;
+  if (!changed && existing.holdedInvoiceNumber === snapshot.invoiceNumber) {
+    return { invoiceRef: existing, snapshot, changed: false };
+  }
+
+  // Persistir el cambio
+  const updates: Partial<typeof invoicesRef.$inferInsert> = {
+    status: snapshot.status,
+  };
+  if (snapshot.invoiceNumber && snapshot.invoiceNumber !== existing.holdedInvoiceNumber) {
+    updates.holdedInvoiceNumber = snapshot.invoiceNumber;
+  }
+  if (snapshot.amount != null) {
+    updates.amount = snapshot.amount.toFixed(2);
+  }
+  if (snapshot.isPaid && !existing.paidAt) {
+    updates.paidAt = snapshot.paidAt ?? new Date();
+  }
+
+  const [updated] = await db
+    .update(invoicesRef)
+    .set(updates)
+    .where(eq(invoicesRef.id, existing.id))
+    .returning();
+
+  if (!updated) {
+    throw new Error("syncInvoiceStatusForMission: update no devolvió fila");
+  }
+
+  return { invoiceRef: updated, snapshot, changed };
+}
+
+// Re-export para que las actions puedan distinguir
 export { HoldedError };

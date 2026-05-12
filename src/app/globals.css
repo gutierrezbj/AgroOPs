@@ -1354,3 +1354,37 @@ main button:disabled {
   font-size: 0.8rem;
   font-style: italic;
 }
+
+.invoice-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.invoice-panel__btn--ghost {
+  background: var(--surface-elevated);
+  color: var(--accent-action);
+  border: 1px solid var(--accent-action);
+}
+
+.invoice-panel__btn--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-action) 8%, var(--surface-elevated));
+  filter: none;
+}
+
+.invoice-panel__sync {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.invoice-panel__sync-noop {
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  border-left: 3px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-base);
+}
