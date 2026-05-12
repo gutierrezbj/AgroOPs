@@ -69,6 +69,10 @@ export default async function MissionDetailPage({ params }: MissionPageProps) {
           {" · "}
           NPTA <code>{mission.nptaReference}</code>
           {" · "}
+          <Link href={`/dashboard/missions/${mission.id}/albaran`}>
+            Albarán
+          </Link>
+          {" · "}
           <Link href="/dashboard/missions">← Volver al listado</Link>
         </p>
       </header>

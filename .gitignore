@@ -57,6 +57,9 @@ backups/
 *.dump
 *.sql.gz
 
+# Storage local de PDFs y otros artefactos (HU-17)
+storage/
+
 # Secrets nunca
 *.pem
 *.key
