@@ -5,6 +5,7 @@
  * El layout productivo llega en HU-03 (bloqueado por Identity Sprint para
  * declarar pantalla "lista").
  */
+import Link from "next/link";
 import { auth } from "@/auth";
 import { logoutAction } from "@/features/auth/actions/logout";
 
@@ -47,12 +48,25 @@ export default async function DashboardPage() {
         <p>Sin sesión activa.</p>
       )}
 
-      <section className="dashboard__placeholder">
-        <h2>Pendiente Sprint 1 (HU-03 en adelante)</h2>
+      <section>
+        <h2>Atajos</h2>
         <ul>
-          <li>Layout productivo con sidebar por épica.</li>
-          <li>ABM drones / pilotos / clientes / parcelas / fitosanitario.</li>
-          <li>Wizard de creación de misión (Sprint 2).</li>
+          <li>
+            <Link href="/dashboard/fleet">Flota</Link> — drones + pilotos.
+          </li>
+          <li>
+            <Link href="/dashboard/clients">Clientes</Link> — cooperativas,
+            ATRIA, agricultores.
+          </li>
+        </ul>
+      </section>
+
+      <section className="dashboard__placeholder">
+        <h2>Pendiente Sprint 1</h2>
+        <ul>
+          <li>HU-03 Layout productivo (sidebar por épica) — bloqueado Identity Sprint.</li>
+          <li>HU-07 ABM parcelas SIGPAC (geometría PostGIS).</li>
+          <li>HU-08 ABM catálogo fitosanitario.</li>
           <li>
             <strong>Identity Sprint</strong> bloquea pantalla "lista":
             tokens del SRS Design System pendientes.
