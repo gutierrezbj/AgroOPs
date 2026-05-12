@@ -16,15 +16,7 @@ import { logAudit } from "@/server/audit";
 import { ROLES, requireRole } from "@/lib/rbac";
 import { createDroneSchema } from "../schemas";
 import { createDrone, getDroneBySerial } from "../services";
-
-export interface CreateDroneState {
-  ok: boolean;
-  drone?: { id: string; model: string; serialNumber: string };
-  error?: string;
-  fieldErrors?: Record<string, string>;
-}
-
-export const initialCreateDroneState: CreateDroneState = { ok: false };
+import type { CreateDroneState } from "./create-drone.types";
 
 function parseNullableNumber(v: FormDataEntryValue | null): number | null {
   if (v == null || v === "") return null;

@@ -8,10 +8,8 @@
  * la action). Se renderiza sólo si el server determina que el user es admin.
  */
 import { useActionState } from "react";
-import {
-  archiveDroneAction,
-  initialArchiveDroneState,
-} from "../actions/archive-drone";
+import { archiveDroneAction } from "../actions/archive-drone";
+import { initialArchiveDroneState } from "../actions/archive-drone.types";
 
 export function ArchiveDroneButton({ droneId }: { droneId: string }) {
   const [state, formAction, pending] = useActionState(

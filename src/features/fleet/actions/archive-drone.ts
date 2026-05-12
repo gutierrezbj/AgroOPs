@@ -14,13 +14,7 @@ import { logAudit } from "@/server/audit";
 import { ROLES, requireRole } from "@/lib/rbac";
 import { droneIdSchema } from "../schemas";
 import { archiveDrone, getDrone } from "../services";
-
-export interface ArchiveDroneState {
-  ok: boolean;
-  error?: string;
-}
-
-export const initialArchiveDroneState: ArchiveDroneState = { ok: false };
+import type { ArchiveDroneState } from "./archive-drone.types";
 
 export async function archiveDroneAction(
   _prev: ArchiveDroneState,

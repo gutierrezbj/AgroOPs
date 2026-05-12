@@ -10,7 +10,8 @@
  * - Mensajes de error en español, accesibles con role="alert".
  */
 import { useActionState } from "react";
-import { loginAction, initialLoginState } from "../actions/login";
+import { loginAction } from "../actions/login";
+import { initialLoginState } from "../actions/login.types";
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(

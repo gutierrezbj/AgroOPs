@@ -7,20 +7,13 @@
  * de credenciales sucede dentro de `authorize()` (ver `auth.ts`), que llama
  * a `verifyCredentials` del service.
  *
- * Estado tipado para `useActionState` en el formulario. Sin redirect manual:
- * Auth.js v5 maneja `redirectTo` internamente.
+ * Estado tipado vive en `login.types.ts` porque Next.js 16 sólo permite
+ * `export async function` en archivos `"use server"`.
  */
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
 import { loginSchema } from "../schemas";
-
-export interface LoginState {
-  ok: boolean;
-  error?: string;
-  fieldErrors?: Partial<Record<"email" | "password", string>>;
-}
-
-export const initialLoginState: LoginState = { ok: false };
+import type { LoginState } from "./login.types";
 
 export async function loginAction(
   _prev: LoginState,

@@ -15,16 +15,16 @@
  * `edit` (pasa `mode="edit"` + `drone` existente como `defaultValues`).
  */
 import { useActionState } from "react";
+import { createDroneAction } from "../actions/create-drone";
 import {
-  createDroneAction,
   initialCreateDroneState,
   type CreateDroneState,
-} from "../actions/create-drone";
+} from "../actions/create-drone.types";
+import { updateDroneAction } from "../actions/update-drone";
 import {
-  updateDroneAction,
   initialUpdateDroneState,
   type UpdateDroneState,
-} from "../actions/update-drone";
+} from "../actions/update-drone.types";
 import {
   droneEasaClassValues,
   droneStatusValues,
