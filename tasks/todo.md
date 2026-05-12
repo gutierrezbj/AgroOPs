@@ -53,11 +53,11 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ## Sprint 2 — Mission state machine + Mapa y meteo (2 semanas)
 
-### EP-04 — Mission state machine
+### EP-04 — Mission state machine ✅ CERRADA 12 may 2026
 
-- [ ] HU-09 Crear misión tipo `aerial_application` con cultivo, parcelas, producto, dosis
-- [ ] HU-10 State machine: draft → planned → approved → preflight → in_flight → completed → invoiced
-- [ ] HU-11 Generación auto-código misión `AGM-YYYY-NNN`
+- [x] HU-09 Crear misión tipo `aerial_application` con cultivo, parcelas, producto, dosis ✅
+- [x] HU-10 State machine: draft → planned → approved → preflight → in_flight → completed → invoiced ✅ (29 tests puros, RBAC por transición, gates duros + warnings, side-effects automáticos)
+- [x] HU-11 Generación auto-código misión `AGM-YYYY-NNNN` + `ALB-YYYY-NNNN` ✅ (7 tests integración)
 
 ### EP-05 — Mapa y meteo
 
