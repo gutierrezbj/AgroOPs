@@ -58,6 +58,10 @@ export default async function DashboardPage() {
             <Link href="/dashboard/clients">Clientes</Link> — cooperativas,
             ATRIA, agricultores.
           </li>
+          <li>
+            <Link href="/dashboard/phytosanitary">Catálogo fitosanitario</Link>
+            {" "}— lotes de productos fitosanitarios.
+          </li>
         </ul>
       </section>
 
@@ -66,7 +70,6 @@ export default async function DashboardPage() {
         <ul>
           <li>HU-03 Layout productivo (sidebar por épica) — bloqueado Identity Sprint.</li>
           <li>HU-07 ABM parcelas SIGPAC (geometría PostGIS).</li>
-          <li>HU-08 ABM catálogo fitosanitario.</li>
           <li>
             <strong>Identity Sprint</strong> bloquea pantalla "lista":
             tokens del SRS Design System pendientes.
