@@ -87,7 +87,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ---
 
-## Sprint 4 — Cuaderno PAC + Observabilidad (1 semana) 🟡 EN CURSO
+## Sprint 4 — Cuaderno PAC + Observabilidad (1 semana) ✅ CERRADO 12 may 2026
 
 ### EP-08 — Cuaderno de campo + cumplimiento ✅ CERRADA 12 may 2026
 
@@ -96,11 +96,13 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 **EP-08 cerrada.**
 
-### EP-09 — Audit + observabilidad
+### EP-09 — Audit + observabilidad ✅ CERRADA 12 may 2026
 
-- [ ] HU-23 Audit log de mutaciones críticas
-- [ ] HU-24 Backup automático Postgres diario + sync S3-compatible
-- [ ] HU-25 Healthcheck endpoint `/health` + alerta Telegram
+- [x] HU-23 Audit log de mutaciones críticas ✅ 12 may 2026 — Service `listAuditLog` con filtros tipados (Zod superRefine: dateFrom ≤ dateTo, action xor actionPrefix). Schema `auditLogFiltersSchema` con `z.coerce.number` para query params, UUID v4 estricto (Zod v3.25+). Página `/dashboard/audit-log` solo admin con tabla 8 columnas (fecha, usuario, rol-pill, acción humana + raw, entidad-pill, ID, IP, JSON colapsable before/after/metadata). Helper `formatAuditAction` mapea 24 acciones conocidas a labels humanos. `KNOWN_AUDIT_ACTIONS` + `KNOWN_ENTITY_TYPES` para dropdowns del filtro. 14 tests del schema + helper.
+- [x] HU-24 Backup automático Postgres diario + sync S3-compatible ✅ 12 may 2026 — Script `scripts/backup.sh` (bash, idempotente, exit codes tipados 1-4) con pg_dump + gzip -9 + GPG opcional + AWS CLI S3-compatible upload. Rotación local `BACKUP_RETAIN_DAYS` default 7. GitHub Action `.github/workflows/backup-daily.yml` cron `30 3 * * *` UTC con notificación Telegram success/fail. Documentado en `CLAUDE.md` con procedimiento restore probado mensualmente.
+- [x] HU-25 Healthcheck endpoint `/health` + alerta Telegram ✅ 12 may 2026 — `GET /api/health` público (sin auth, healthcheckers externos lo necesitan). `runHealthCheck()` evalúa 7 componentes: database (SELECT 1 con latency), redis (PING), holded/aemet/enaire/telegram/backup-s3 (env vars only, no toca API). Estado agregado `down|degraded|ok` → HTTP 503 si DB o Redis caídos, 200 resto. `notifyTelegram(text)` con Markdown, timeout 5s, no-op si no configurado. Versión SHA desde `AGROOPS_VERSION` o `VERCEL_GIT_COMMIT_SHA`.
+
+**EP-09 cerrada. Sprint 4 cerrado.**
 
 ---
 

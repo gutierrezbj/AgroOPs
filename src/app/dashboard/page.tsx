@@ -78,6 +78,12 @@ export default async function DashboardPage() {
             <Link href="/dashboard/field-notebook">Cuaderno de campo</Link>
             {" "}— registro PAC con export PDF tabular (HU-21 + HU-22).
           </li>
+          {session?.user.role === "admin" && (
+            <li>
+              <Link href="/dashboard/audit-log">Audit log</Link> — trazabilidad
+              append-only de mutaciones críticas (HU-23, solo admin).
+            </li>
+          )}
         </ul>
       </section>
 
@@ -85,7 +91,7 @@ export default async function DashboardPage() {
         <h2>Pendiente</h2>
         <ul>
           <li>HU-03 Layout productivo (sidebar por épica) — Identity Sprint v1 aplicada, falta sidebar productivo.</li>
-          <li>EP-09 Audit log UI + backups Postgres + healthcheck Telegram (Sprint 4).</li>
+          <li>Sprint 5 — primera operación real end-to-end por John con AgroOps.</li>
         </ul>
       </section>
     </main>

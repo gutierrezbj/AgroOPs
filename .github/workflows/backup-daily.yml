@@ -1,0 +1,74 @@
+# AgroOps — Backup diario PostgreSQL (HU-24)
+#
+# Ejecuta scripts/backup.sh cada noche a las 03:30 UTC (~05:30 CEST en verano).
+# La hora elegida es post-cierre operativo y antes del horario laboral.
+#
+# Secretos requeridos en GitHub repo settings → Secrets:
+#   DATABASE_URL              # connection string al servidor productivo
+#   BACKUP_S3_ENDPOINT        # Backblaze o Hetzner o AWS
+#   BACKUP_S3_BUCKET
+#   BACKUP_S3_ACCESS_KEY
+#   BACKUP_S3_SECRET_KEY
+#   BACKUP_GPG_RECIPIENT      # opcional, si se quiere cifrar
+#   BACKUP_GPG_PUBLIC_KEY     # opcional, contenido ASCII-armored de la clave pública
+#   TELEGRAM_BOT_TOKEN        # opcional, para notificar éxito/fallo
+#   TELEGRAM_CHAT_ID
+
+name: Backup diario
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar PostgreSQL client + AWS CLI
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client gnupg
+          # aws-cli ya viene en ubuntu-latest
+
+      - name: Importar clave pública GPG (si configurada)
+        if: ${{ secrets.BACKUP_GPG_PUBLIC_KEY != '' }}
+        run: |
+          echo "${{ secrets.BACKUP_GPG_PUBLIC_KEY }}" | gpg --batch --import
+
+      - name: Ejecutar backup.sh
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BACKUP_S3_ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
+          BACKUP_S3_BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+          BACKUP_S3_ACCESS_KEY: ${{ secrets.BACKUP_S3_ACCESS_KEY }}
+          BACKUP_S3_SECRET_KEY: ${{ secrets.BACKUP_S3_SECRET_KEY }}
+          BACKUP_GPG_RECIPIENT: ${{ secrets.BACKUP_GPG_RECIPIENT }}
+        run: |
+          chmod +x scripts/backup.sh
+          ./scripts/backup.sh
+
+      - name: Notificar éxito Telegram (opcional)
+        if: ${{ success() && secrets.TELEGRAM_BOT_TOKEN != '' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "content-type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"✓ AgroOps backup diario OK — $(date -u '+%Y-%m-%d %H:%M UTC')\"}"
+
+      - name: Notificar fallo Telegram (opcional)
+        if: ${{ failure() && secrets.TELEGRAM_BOT_TOKEN != '' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -sS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "content-type: application/json" \
+            -d "{\"chat_id\": \"${TELEGRAM_CHAT_ID}\", \"text\": \"✗ AgroOps backup diario FAIL — $(date -u '+%Y-%m-%d %H:%M UTC'). Revisa GitHub Actions logs.\"}"

@@ -116,6 +116,44 @@ Cronograma SDD-08: **9 semanas v1.0** (Sprint 0 + 5 sprints).
 
 - **Sin staging.** Mac local → push a `main` → CI verde → deploy automático a producción.
 - **Dominio:** `agroops.systemrapid.io` (staging + operación interna AgroM). `app.agroops.es` queda reservado para producción comercial futura (ADR-10 naming AgroOps producto independiente).
+
+---
+
+## Backup & Restore (HU-24)
+
+**Backup:** `scripts/backup.sh` ejecuta `pg_dump` → gzip → opcional GPG → opcional S3-compatible. Se programa vía `.github/workflows/backup-daily.yml` (cron `30 3 * * *` UTC). Conserva 7 días local (`BACKUP_RETAIN_DAYS`).
+
+**Restore (probado mensualmente):**
+
+```bash
+# 1. Descargar el backup desde S3 (último OK)
+aws --endpoint-url $BACKUP_S3_ENDPOINT \
+    s3 cp s3://$BACKUP_S3_BUCKET/agroops/2026/05/agroops_20260512_033012.sql.gz ./
+
+# 2. (opcional) Descifrar si tiene .gpg
+gpg --decrypt agroops_20260512_033012.sql.gz.gpg > agroops_20260512_033012.sql.gz
+
+# 3. Restaurar a un DB de prueba (NO sobreescribir productivo sin disaster)
+createdb agroops_restore_test
+gunzip -c agroops_20260512_033012.sql.gz | psql -d agroops_restore_test
+
+# 4. Verificar
+psql -d agroops_restore_test -c "SELECT COUNT(*) FROM missions;"
+psql -d agroops_restore_test -c "SELECT PostGIS_Version();"
+
+# 5. Limpiar
+dropdb agroops_restore_test
+```
+
+Hito Sprint 5: registrar restore manual en `tasks/lessons.md` cada mes.
+
+---
+
+## Observabilidad (HU-25)
+
+- `GET /api/health` — endpoint público sin auth. Retorna `{ status, version, uptime, checks }`. HTTP 503 si DB o Redis caídos, 200 en cualquier otro caso (status puede ser `degraded` cuando integraciones opcionales no configuradas).
+- Telegram alerts vía `notifyTelegram()` en `src/server/observability/telegram.ts`. No-op si `TELEGRAM_BOT_TOKEN` no configurado.
+- Audit log UI en `/dashboard/audit-log` (solo admin). Filtros por fecha, usuario, entidad, acción.
 - **Disciplina pre-merge:** 0 errores TS, 0 ESLint errors, e2e críticos verdes, migraciones reversibles.
 - **Pre-deploy:** snapshot DB automático.
 - **Post-deploy:** healthcheck Telegram + registro SA99.

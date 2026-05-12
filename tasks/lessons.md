@@ -282,4 +282,31 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-12 · Zod v3.25+ UUID strict (versión 1-8 obligatoria)
+
+**Contexto:** HU-23 tests del schema de filtros audit log. Usé `"00000000-0000-0000-0000-000000000001"` como UUID de ejemplo y Zod lo rechazó: `Invalid UUID`.
+**Qué se descubrió:** Zod v3.25+ valida UUIDs con pattern estricto que requiere bits de versión (1-8) + bits de variant (8/9/a/b) según RFC 4122 §4.1.1-2. El UUID `...0001` tiene el bit de versión a `0` (no asignado), por lo que es técnicamente inválido. La función `defaultRandom()` de Postgres y `randomUUID()` de Node generan UUIDs v4 correctos (4xxx-yxxx con y ∈ {8,9,a,b}), así que en producción no hay problema — solo en tests con UUIDs hardcoded "obvios".
+**Solución / patrón adoptado:** en tests, usar UUIDs v4 válidos como `"550e8400-e29b-41d4-a716-446655440000"` o `crypto.randomUUID()`. Si necesitamos el nil UUID (`00000000-0000-0000-0000-000000000000`), Zod lo acepta como caso especial. Crear helper de test `makeTestUuid(seed: number)` si esto se repite. Replicar este patrón en futuros tests que generen UUIDs manualmente.
+**Referencia:** `src/features/audit/services.test.ts` test "acepta entityType + entityId para timeline 1 misión". Aplicable a parcels, missions, clients, drones, pilots tests si se introducen.
+
+---
+
+## 2026-05-12 · Healthcheck endpoint público sin auth + degraded vs down
+
+**Contexto:** HU-25 `/api/health`. Decidir: ¿requiere auth? ¿qué HTTP status devolver para "operativo pero AEMET no configurado"?
+**Qué se decidió:** público sin auth. Los healthcheckers externos (Telegram cron, Uptime Robot, load balancer del proveedor cloud) no pueden manejar sesiones de Auth.js. La info devuelta es agregada (`status`, `version`, `uptime`, `checks[]`) sin secretos: si una integración no está configurada, decimos "Holded no configurado — facturación deshabilitada" sin exponer la API key. HTTP status binario: 503 si DB o Redis caídos (no operativo); 200 en cualquier otro caso, con `status: "degraded"` en el JSON si alguna integración opcional falta. Esto permite distinguir "down" (necesita acción urgente) de "degraded" (configuración pendiente, no urgente) sin saturar al operador.
+**Solución / patrón adoptado:** cada check devuelve `{ name, status: ok|degraded|down, configured: bool, message?, latencyMs? }`. El agregado `runHealthCheck()` aplica reglas: DB/Redis down → status="down"; cualquier degraded → status="degraded"; todo verde → "ok". Patrón replicable cuando añadamos checks futuros (DroneHub v1.1, FitoLink v1.2). El endpoint reserva el HTTP 503 solo para "no operativo".
+**Referencia:** `src/server/observability/health.ts`, `src/app/api/health/route.ts`. En Sprint 5, configurar Uptime Robot apuntando a `https://agroops.systemrapid.io/api/health` con escalado a Telegram si 503 persiste >5 min.
+
+---
+
+## 2026-05-12 · Backup bash idempotente con exit codes tipados + GitHub Action cron
+
+**Contexto:** HU-24 backup automático Postgres. Necesita correr en cron diario sin supervisión y notificar fallos de forma identificable.
+**Qué se descubrió:** `set -euo pipefail` en bash atrapa errores básicos pero no permite distinguir "DATABASE_URL no definida" de "pg_dump falló" de "upload S3 falló". Si el GitHub Action devuelve siempre exit 1 sin detalle, los logs son ruidosos al diagnosticar.
+**Solución / patrón adoptado:** exit codes tipados 1-4 (1=prerequisito faltante, 2=pg_dump, 3=gpg, 4=S3 upload) con función `die "msg" $exit_code`. Función `require_cmd` y `require_env` para fail-fast en prerequisitos. Variables opcionales (`BACKUP_GPG_RECIPIENT`, `BACKUP_S3_BUCKET`) se chequean con `if [ -n "${VAR:-}" ]`. Rotación local con `find -mtime +$N -delete` siempre al final (idempotente, no rompe si no hay archivos viejos). GitHub Action separa los pasos para que el log diga exactamente cuál falló y dispara dos notificaciones Telegram (`if: success()` y `if: failure()`). Patrón replicable para future scripts (restore.sh, healthcheck-batch.sh, etc.).
+**Referencia:** `scripts/backup.sh` + `.github/workflows/backup-daily.yml`. Documentación restore en CLAUDE.md sección "Backup & Restore".
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->
