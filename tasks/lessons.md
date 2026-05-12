@@ -23,6 +23,21 @@ Formato por entrada:
 
 ---
 
+## 2026-05-12 · Next.js 16 endurece `"use server"`: sólo async functions, nada más
+
+**Contexto:** smoke visual del HU-04 tras añadir CSS estructural. JuanCho abre `/login` en el navegador y ve Runtime Error: *"A 'use server' file can only export async functions, found object."*
+**Qué rompió:** los archivos action (`login.ts`, `create-drone.ts`, `update-drone.ts`, `archive-drone.ts`) declaraban `"use server"` y exportaban además de la función async: `interface XxxState`, `const initialXxxState`. En Next 15 estaba tolerado; Next 16 lo bloquea en runtime al cargar el chunk del cliente.
+**Solución / patrón adoptado:** un archivo `"use server"` SÓLO exporta `export async function`. Para acompañar la función con types y estado inicial, **colocalizar** un archivo `<name>.types.ts` (sin `"use server"`) y poner ahí `XxxState` + `initialXxxState`. El archivo action importa `import type { XxxState } from "./<name>.types"` y el componente cliente importa `initialXxxState` del `.types.ts` directamente.
+**Patrón canónico:**
+```
+features/<feat>/actions/
+  <name>.ts          # "use server" + 1 export async function
+  <name>.types.ts    # type State + const initialState
+```
+**Referencia:** [Next.js 16 docs — invalid-use-server-value](https://nextjs.org/docs/messages/invalid-use-server-value). Commit `0bbb6de` aplica el split a las 4 actions del repo. 64/64 tests siguen verde tras el cambio.
+
+---
+
 ## 2026-05-12 · Auth.js v5 + cookies: `localhost` ≠ `127.0.0.1` para el cliente
 
 **Contexto:** smoke test E2E del login HU-02 con curl.
