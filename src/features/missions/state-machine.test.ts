@@ -356,7 +356,7 @@ describe("evaluateGate — approved → preflight", () => {
   });
 });
 
-describe("evaluateGate — completed → invoiced (HU-19)", () => {
+describe("evaluateGate — completed → invoiced (HU-19) modo Holded", () => {
   const baseCtx = {
     mission: makeMission({
       status: "completed" as const,
@@ -365,6 +365,7 @@ describe("evaluateGate — completed → invoiced (HU-19)", () => {
     drone: makeDrone(),
     pilot: makePilot(),
     parcelCount: 2,
+    invoicingMode: "holded" as const,
   };
 
   it("pasa con albarán firmado + cliente sync + invoice issued", () => {
@@ -450,6 +451,75 @@ describe("evaluateGate — completed → invoiced (HU-19)", () => {
       invoiceStatus: "issued",
     });
     expect(result.warnings.some((w) => /firma/i.test(w))).toBe(true);
+  });
+});
+
+describe("evaluateGate — completed → invoiced modo manual (v1.0 default)", () => {
+  const baseCtx = {
+    mission: makeMission({
+      status: "completed" as const,
+      areaTreatedHa: "4.5",
+    }),
+    drone: makeDrone(),
+    pilot: makePilot(),
+    parcelCount: 2,
+    invoicingMode: "manual" as const,
+  };
+
+  it("pasa con albarán firmado (no exige Holded sync ni invoice issued)", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      // Sin clientHoldedSynced, sin invoiceStatus — irrelevantes en manual
+    });
+    expect(result.ok).toBe(true);
+    expect(result.errors).toEqual([]);
+    // Pero sí emite warning informativo recordando facturar a mano
+    expect(result.warnings.some((w) => /manual/i.test(w))).toBe(true);
+  });
+
+  it("rechaza si albarán no firmado (requisito legal en ambos modos)", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: false,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((e) => /albar/i.test(e))).toBe(true);
+  });
+
+  it("ignora clientHoldedSynced=false en modo manual", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      clientHoldedSynced: false, // no debería bloquear
+      invoiceStatus: null,
+    });
+    expect(result.ok).toBe(true);
+    // Sin error sobre cliente Holded
+    expect(result.errors.some((e) => /Holded/i.test(e))).toBe(false);
+  });
+
+  it("ignora invoiceStatus=error en modo manual", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      invoiceStatus: "error",
+    });
+    expect(result.ok).toBe(true);
+    expect(result.errors.some((e) => /factura/i.test(e))).toBe(false);
+  });
+
+  it("default es manual si invoicingMode no se pasa en el contexto", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      mission: baseCtx.mission,
+      drone: baseCtx.drone,
+      pilot: baseCtx.pilot,
+      parcelCount: baseCtx.parcelCount,
+      albaranSigned: true,
+      // sin invoicingMode
+    });
+    expect(result.ok).toBe(true);
+    expect(result.warnings.some((w) => /manual/i.test(w))).toBe(true);
   });
 });
 

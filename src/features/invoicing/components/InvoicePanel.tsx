@@ -30,6 +30,12 @@ interface InvoicePanelProps {
   missionStatus: MissionStatus;
   invoice: InvoiceRef | null;
   canDispatch: boolean;
+  /**
+   * Modo de facturación activo (v1.0 default `manual`). Si `manual`, el
+   * panel muestra un aviso explicativo y oculta los botones de disparo
+   * Holded — la integración queda lista pero no se invoca.
+   */
+  invoicingMode: "manual" | "holded";
 }
 
 export function InvoicePanel({
@@ -37,6 +43,7 @@ export function InvoicePanel({
   missionStatus,
   invoice,
   canDispatch,
+  invoicingMode,
 }: InvoicePanelProps) {
   const [state, formAction, pending] = useActionState(
     dispatchInvoiceAction,
@@ -57,7 +64,9 @@ export function InvoicePanel({
       }
     : invoice;
 
+  const isManualMode = invoicingMode === "manual";
   const showDispatchButton =
+    !isManualMode &&
     canDispatch &&
     (missionStatus === "completed" ||
       (effective && effective.status === "error"));
@@ -65,11 +74,23 @@ export function InvoicePanel({
   return (
     <section className="invoice-panel" aria-label="Factura Holded">
       <header className="invoice-panel__header">
-        <h2>Factura Holded</h2>
+        <h2>Factura {isManualMode ? "(modo manual)" : "Holded"}</h2>
         <p>
-          Disparo automático al transitar la misión de{" "}
-          <code>completed</code> a <code>invoiced</code>. El operador puede
-          también disparar/reintentar manualmente desde aquí.
+          {isManualMode ? (
+            <>
+              v1.0 opera en modo <code>manual</code>: AgroM emite la
+              factura en Holded fuera del sistema. La integración API
+              (HU-18/19/20) queda lista para activar con{" "}
+              <code>AGROOPS_INVOICING_MODE=holded</code>. Al transitar a{" "}
+              <code>invoiced</code> sólo se exige el albarán firmado.
+            </>
+          ) : (
+            <>
+              Disparo automático al transitar la misión de{" "}
+              <code>completed</code> a <code>invoiced</code>. El operador
+              puede también disparar/reintentar manualmente desde aquí.
+            </>
+          )}
         </p>
       </header>
 
@@ -155,7 +176,8 @@ export function InvoicePanel({
           </form>
         )}
 
-        {canDispatch &&
+        {!isManualMode &&
+          canDispatch &&
           effective &&
           (effective.status === "issued" || effective.status === "paid") && (
             <SyncInvoiceButton missionId={missionId} />

@@ -18,6 +18,7 @@ import { listPilots } from "@/features/fleet/pilots/services";
 import { listParcels } from "@/features/parcels/services";
 import { getMission } from "@/features/missions/services";
 import { getInvoiceForMission } from "@/features/invoicing/services";
+import { getInvoicingMode } from "@/lib/constants";
 import { MissionForm } from "@/features/missions/components/MissionForm";
 import { MissionParcelsSelector } from "@/features/missions/components/MissionParcelsSelector";
 import { MissionStatusBadge } from "@/features/missions/components/MissionStatusBadge";
@@ -53,6 +54,7 @@ export default async function MissionDetailPage({ params }: MissionPageProps) {
     getInvoiceForMission(mission.id),
   ]);
   const canDispatchInvoice = hasRole(session, ROLES.ADMIN_ONLY);
+  const invoicingMode = getInvoicingMode();
 
   const selectedParcelIds = mission.parcels.map((p) => p.parcel.id);
   const summedAreaHa = mission.parcels.reduce(
@@ -253,6 +255,7 @@ export default async function MissionDetailPage({ params }: MissionPageProps) {
           missionStatus={mission.status}
           invoice={invoice}
           canDispatch={canDispatchInvoice}
+          invoicingMode={invoicingMode}
         />
       )}
 

@@ -309,4 +309,14 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-12 · Feature flag de runtime: integración Holded queda ready-to-plug
+
+**Contexto:** decisión operativa post-EP-09: AgroM va a emitir facturas en Holded manualmente en v1.0. La integración (HU-18 + HU-19 + HU-20) queda implementada y con 349 tests, pero no se activa.
+**Qué se descubrió:** la opción "borrar el código y meterlo cuando haga falta" es peor que dejarlo dormido — borraría 1500 LoC + 25 tests + 3 endpoints + UI ya pulida. La opción "dejar el código activo y exigir HOLDED_API_KEY válida" obliga a configurar Holded en producción aunque no se use. La tercera opción — feature flag de runtime — permite que la integración esté lista pero apagada por defecto.
+**Solución / patrón adoptado:** env var `AGROOPS_INVOICING_MODE` (`manual` default | `holded`). Helper `getInvoicingMode()` + `isHoldedAutoDispatchEnabled()` en `lib/constants`. El gate `completed → invoiced` adapta su severidad según el modo (manual sólo exige albarán firmado; holded exige sync + factura issued). El side-effect en `transitionMission` se salta cuando modo manual. El `InvoicePanel` muestra mensaje explicativo + oculta botones de disparo. Patrón replicable para futuras integraciones opcionales (DroneHub v1.1, FitoLink v1.2). Coste de activación: cambiar 1 env + reiniciar. Sin migración de DB. Sin código nuevo.
+**Lección general:** un feature flag de runtime es la herramienta correcta cuando una integración compleja debe estar lista pero no obligatoria. El "modo default fail-safe" (manual = no toca el API externo) protege producción de configuración incompleta.
+**Referencia:** `src/lib/constants.ts` (`getInvoicingMode`, `isHoldedAutoDispatchEnabled`), `src/features/missions/state-machine.ts` (gate dependiente de `ctx.invoicingMode`), `src/features/missions/services.ts` (`transitionMission` skip side-effect), `src/features/invoicing/components/InvoicePanel.tsx` (`isManualMode` rama UI). CLAUDE.md sección "Facturación: modo manual vs Holded" documenta el switch.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->

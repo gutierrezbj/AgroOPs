@@ -25,7 +25,11 @@ import {
 import { parcels, type Parcel } from "@/db/schema/parcels";
 import { pilots, type Pilot } from "@/db/schema/pilots";
 import { nextMissionCode } from "@/lib/mission-codes";
-import { NPTA_DROVINCI } from "@/lib/constants";
+import {
+  NPTA_DROVINCI,
+  getInvoicingMode,
+  isHoldedAutoDispatchEnabled,
+} from "@/lib/constants";
 import { captureWeatherForCoordinates } from "@/server/integrations/aemet";
 import {
   createInvoiceForMission,
@@ -380,13 +384,18 @@ export async function transitionMission(
   }
 
   // ─── HU-19: disparo automático de factura en completed → invoiced ─────
-  // Patrón idéntico a HU-13: side-effect ANTES del gate, así éste decide
-  // con datos reales (existencia de invoice_ref) si bloquea o no.
+  // SOLO se ejecuta cuando AGROOPS_INVOICING_MODE=holded. En modo `manual`
+  // (default v1.0) la facturación es offline — AgroM emite en Holded a
+  // mano y marca la misión cuando ha facturado.
   //
-  // Si ya hay invoice issued, no duplicamos. Si no, intentamos crear.
-  // Si Holded falla, persistimos invoice_ref con status=error y NO
-  // transitamos (el gate falla porque no hay invoice issued).
-  if (from === "completed" && targetStatus === "invoiced") {
+  // Patrón side-effect-ANTES-del-gate (idéntico a HU-13): el gate decide
+  // con datos reales (existencia de invoice_ref). Si Holded falla, persiste
+  // invoice_ref con status=error y el gate bloquea la transición.
+  if (
+    from === "completed" &&
+    targetStatus === "invoiced" &&
+    isHoldedAutoDispatchEnabled()
+  ) {
     const existing = await getInvoiceForMission(id);
     if (!existing || existing.status !== "issued") {
       try {
@@ -428,6 +437,7 @@ export async function transitionMission(
   let albaranSigned: boolean | undefined;
   let invoiceStatus: GateContext["invoiceStatus"];
   let clientHoldedSynced: boolean | undefined;
+  const invoicingMode = getInvoicingMode();
   if (from === "completed" && targetStatus === "invoiced") {
     const [albaranRow] = await db
       .select({ signedAt: albarans.signedAt })
@@ -436,15 +446,19 @@ export async function transitionMission(
       .limit(1);
     albaranSigned = Boolean(albaranRow?.signedAt);
 
-    const [clientRow] = await db
-      .select({ holdedContactId: clients.holdedContactId })
-      .from(clients)
-      .where(eq(clients.id, mission.clientId))
-      .limit(1);
-    clientHoldedSynced = Boolean(clientRow?.holdedContactId);
+    // Sólo cargar contexto Holded si el modo lo requiere — en manual
+    // estos campos no se evalúan y ahorramos 2 queries.
+    if (invoicingMode === "holded") {
+      const [clientRow] = await db
+        .select({ holdedContactId: clients.holdedContactId })
+        .from(clients)
+        .where(eq(clients.id, mission.clientId))
+        .limit(1);
+      clientHoldedSynced = Boolean(clientRow?.holdedContactId);
 
-    const invoice = await getInvoiceForMission(id);
-    invoiceStatus = invoice?.status ?? null;
+      const invoice = await getInvoiceForMission(id);
+      invoiceStatus = invoice?.status ?? null;
+    }
   }
 
   const ctx: GateContext = {
@@ -455,6 +469,7 @@ export async function transitionMission(
     albaranSigned,
     invoiceStatus,
     clientHoldedSynced,
+    invoicingMode,
   };
   const gate = evaluateGate(from, targetStatus, ctx);
   if (!gate.ok) {

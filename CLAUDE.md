@@ -21,7 +21,7 @@ Resumen de los ADRs (la versión completa vive en Notion → SDD-04).
 - **ADR-3.** Integración FitoLink vía API limpia (no shared DB). API pública es v1.2.
 - **ADR-4.** El producto fitosanitario lo aporta el cliente final. AgroOps no gestiona stock.
 - **ADR-5.** Operación bajo paraguas Drovinci (NPTA AESA) hasta SORA propia AgroM.
-- **ADR-6.** Facturación delegada a Holded vía API. Holded es fuente de verdad fiscal.
+- **ADR-6.** Facturación delegada a Holded. Holded es fuente de verdad fiscal. **v1.0 opera en modo `manual` por defecto** — AgroM emite las facturas en Holded a mano fuera del sistema. La integración API (HU-18/19/20) queda implementada y testeada esperando activación vía `AGROOPS_INVOICING_MODE=holded`. La decisión de cuándo activar es del operador.
 - **ADR-7.** Auth.js v5 con credentials + bcrypt + Redis. Sin adapter multi-tenant.
 - **ADR-8.** API pública (v1.2) versionada por path `/api/v1/...`.
 - **ADR-9.** Backups encriptados off-site (S3-compatible). Restore probado mensual.
@@ -146,6 +146,21 @@ dropdb agroops_restore_test
 ```
 
 Hito Sprint 5: registrar restore manual en `tasks/lessons.md` cada mes.
+
+---
+
+## Facturación: modo manual vs Holded
+
+Controlado por la env `AGROOPS_INVOICING_MODE`:
+
+- **`manual` (default v1.0)** — AgroOps NO toca Holded API. La transición `completed → invoiced` sólo exige albarán firmado; aparece un warning recordando facturar a mano. El `InvoicePanel` muestra explicación del modo y oculta los botones de disparo Holded. La integración (`createHoldedInvoice`, `syncHoldedInvoiceStatus`, sincronización de contactos, panel UI) queda completa en código + 349 tests y se activa con un cambio de env.
+- **`holded`** — Disparo automático activo. Requiere:
+  - `HOLDED_API_KEY` configurada
+  - `AGROOPS_PRICE_PER_HA_EUR > 0`
+  - Cada cliente con `holdedContactId` sincronizado (botón en `/dashboard/clients/[id]`)
+  - El gate `completed → invoiced` exige factura emitida en Holded; el side-effect en `transitionMission` la dispara automáticamente si no existe.
+
+**Switch operativo:** cambiar la env, reiniciar el servicio. Sin migración de DB. Las misiones ya marcadas como `invoiced` en modo manual mantienen su estado; las nuevas pasarán por el gate estricto.
 
 ---
 

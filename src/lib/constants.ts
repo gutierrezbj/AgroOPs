@@ -76,3 +76,27 @@ export function getInvoiceVatPct(): number {
   const n = parseFloat(raw);
   return Number.isFinite(n) && n >= 0 && n <= 100 ? n : 21;
 }
+
+/**
+ * Modo de facturación AgroOps:
+ * - `manual` (default v1.0) — AgroM emite facturas en Holded manualmente
+ *   fuera del sistema. AgroOps NO dispara API, NO bloquea transición
+ *   `completed → invoiced` por falta de holdedContactId. El operador
+ *   marca la misión como `invoiced` cuando ha facturado a mano. La
+ *   integración HU-18/19/20 queda en código lista para enchufar.
+ * - `holded` — Disparo automático activo. Requiere HOLDED_API_KEY +
+ *   AGROOPS_PRICE_PER_HA_EUR + clientes sincronizados. Gate estricto.
+ *
+ * Configurable vía env `AGROOPS_INVOICING_MODE`. Cualquier valor distinto
+ * de `holded` (incluido vacío) se interpreta como `manual` — fail-safe.
+ */
+export type InvoicingMode = "manual" | "holded";
+
+export function getInvoicingMode(): InvoicingMode {
+  const raw = (process.env.AGROOPS_INVOICING_MODE ?? "").toLowerCase().trim();
+  return raw === "holded" ? "holded" : "manual";
+}
+
+export function isHoldedAutoDispatchEnabled(): boolean {
+  return getInvoicingMode() === "holded";
+}

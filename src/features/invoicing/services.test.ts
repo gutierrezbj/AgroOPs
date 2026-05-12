@@ -14,10 +14,16 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { InvoicingError } from "./services";
-import { getInvoiceVatPct, getPricePerHaEur } from "@/lib/constants";
+import {
+  getInvoiceVatPct,
+  getInvoicingMode,
+  getPricePerHaEur,
+  isHoldedAutoDispatchEnabled,
+} from "@/lib/constants";
 
 const ORIGINAL_PRICE = process.env.AGROOPS_PRICE_PER_HA_EUR;
 const ORIGINAL_VAT = process.env.AGROOPS_INVOICE_VAT_PCT;
+const ORIGINAL_MODE = process.env.AGROOPS_INVOICING_MODE;
 
 afterEach(() => {
   if (ORIGINAL_PRICE === undefined) {
@@ -29,6 +35,11 @@ afterEach(() => {
     delete process.env.AGROOPS_INVOICE_VAT_PCT;
   } else {
     process.env.AGROOPS_INVOICE_VAT_PCT = ORIGINAL_VAT;
+  }
+  if (ORIGINAL_MODE === undefined) {
+    delete process.env.AGROOPS_INVOICING_MODE;
+  } else {
+    process.env.AGROOPS_INVOICING_MODE = ORIGINAL_MODE;
   }
 });
 
@@ -111,6 +122,43 @@ describe("getInvoiceVatPct", () => {
     expect(getInvoiceVatPct()).toBe(21);
     process.env.AGROOPS_INVOICE_VAT_PCT = "150";
     expect(getInvoiceVatPct()).toBe(21);
+  });
+});
+
+describe("getInvoicingMode", () => {
+  beforeEach(() => {
+    delete process.env.AGROOPS_INVOICING_MODE;
+  });
+
+  it("default 'manual' sin env (v1.0 fail-safe)", () => {
+    expect(getInvoicingMode()).toBe("manual");
+    expect(isHoldedAutoDispatchEnabled()).toBe(false);
+  });
+
+  it("acepta 'holded' explícito case-insensitive con trim", () => {
+    process.env.AGROOPS_INVOICING_MODE = "holded";
+    expect(getInvoicingMode()).toBe("holded");
+    expect(isHoldedAutoDispatchEnabled()).toBe(true);
+
+    process.env.AGROOPS_INVOICING_MODE = "HOLDED";
+    expect(getInvoicingMode()).toBe("holded");
+
+    process.env.AGROOPS_INVOICING_MODE = "  holded  ";
+    expect(getInvoicingMode()).toBe("holded");
+  });
+
+  it("cualquier otro valor cae en 'manual' (fail-safe)", () => {
+    process.env.AGROOPS_INVOICING_MODE = "auto";
+    expect(getInvoicingMode()).toBe("manual");
+
+    process.env.AGROOPS_INVOICING_MODE = "yes";
+    expect(getInvoicingMode()).toBe("manual");
+
+    process.env.AGROOPS_INVOICING_MODE = "";
+    expect(getInvoicingMode()).toBe("manual");
+
+    process.env.AGROOPS_INVOICING_MODE = "manual";
+    expect(getInvoicingMode()).toBe("manual");
   });
 });
 

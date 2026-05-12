@@ -59,8 +59,15 @@ export const TRANSITION_ROLES: Record<string, readonly UserRole[]> = {
  * Contexto necesario para evaluar gates. Lo construye el service antes de
  * llamar a `evaluateGate` (joins de drone, pilot, count de mission_parcels).
  *
- * HU-19: añadidos `albaranSigned` e `invoiceStatus` para el gate
- * `completed → invoiced`.
+ * HU-19: añadidos `albaranSigned`, `invoiceStatus`, `clientHoldedSynced`
+ * para el gate `completed → invoiced` cuando el modo de facturación es
+ * `holded`.
+ *
+ * `invoicingMode` controla la severidad del gate `completed → invoiced`:
+ * - `manual` (default v1.0): sólo exige albarán firmado. La factura se
+ *   emite a mano fuera del sistema. La transición marca la misión como
+ *   `invoiced` para cerrar el ciclo operativo y aparece en el cuaderno PAC.
+ * - `holded`: gate estricto con Holded sync, factura emitida, etc.
  */
 export interface GateContext {
   mission: Mission;
@@ -73,6 +80,8 @@ export interface GateContext {
   invoiceStatus?: "pending" | "issued" | "paid" | "cancelled" | "error" | null;
   /** Cliente sincronizado con Holded (holdedContactId presente). */
   clientHoldedSynced?: boolean;
+  /** Modo de facturación efectivo. Si no se pasa se asume `manual`. */
+  invoicingMode?: "manual" | "holded";
 }
 
 export interface GateResult {
@@ -216,11 +225,19 @@ export function evaluateGate(
     }
   }
 
-  // ─── completed → invoiced (HU-19): requiere albarán firmado +
-  // cliente Holded-sincronizado + factura emitida (el service de
-  // transitionMission dispara `createInvoiceForMission` ANTES del gate,
-  // así aquí evaluamos el resultado real).
+  // ─── completed → invoiced (HU-19): el gate depende del modo de facturación.
+  // - `manual` (default v1.0): sólo exige albarán firmado. La factura se
+  //   emite fuera del sistema y el operador marca la misión como facturada
+  //   manualmente. La transición sigue siendo significativa porque cierra
+  //   el ciclo operativo y mueve la misión al cuaderno PAC con etiqueta
+  //   correcta.
+  // - `holded`: gate estricto con sync de cliente, factura emitida (issued
+  //   o paid) y sin errores recientes.
   if (from === "completed" && to === "invoiced") {
+    const mode = ctx.invoicingMode ?? "manual";
+
+    // Albarán firmado es requisito en ambos modos — sin firma no hay
+    // evidencia legal de la aplicación.
     if (ctx.albaranSigned === false) {
       errors.push(
         "El albarán de la misión no está firmado por el agricultor",
@@ -228,18 +245,29 @@ export function evaluateGate(
     } else if (ctx.albaranSigned === undefined) {
       warnings.push("Verificar firma del albarán (estado no cargado en contexto)");
     }
-    if (ctx.clientHoldedSynced === false) {
-      errors.push(
-        "El cliente no está vinculado con Holded. Sincronízalo en /dashboard/clients/[id] antes de facturar",
-      );
-    }
-    if (ctx.invoiceStatus === "error") {
-      errors.push(
-        "El último intento de factura falló en Holded. Revisa el error en el panel de la misión y reintenta",
-      );
-    } else if (ctx.invoiceStatus !== "issued" && ctx.invoiceStatus !== "paid") {
-      errors.push(
-        "No hay factura emitida (issued) en Holded para esta misión",
+
+    if (mode === "holded") {
+      if (ctx.clientHoldedSynced === false) {
+        errors.push(
+          "El cliente no está vinculado con Holded. Sincronízalo en /dashboard/clients/[id] antes de facturar",
+        );
+      }
+      if (ctx.invoiceStatus === "error") {
+        errors.push(
+          "El último intento de factura falló en Holded. Revisa el error en el panel de la misión y reintenta",
+        );
+      } else if (
+        ctx.invoiceStatus !== "issued" &&
+        ctx.invoiceStatus !== "paid"
+      ) {
+        errors.push(
+          "No hay factura emitida (issued) en Holded para esta misión",
+        );
+      }
+    } else {
+      // Modo manual: aviso informativo, no bloquea.
+      warnings.push(
+        "Modo facturación manual — recuerda emitir la factura en Holded antes de marcar como facturada",
       );
     }
   }
