@@ -48,3 +48,31 @@ export const MISSION_STATUS_FLOW = [
 ] as const;
 
 export const MISSION_STATUS_TERMINAL = ["invoiced", "cancelled"] as const;
+
+/**
+ * Precio por hectárea aplicado en €. Configurable vía env var
+ * `AGROOPS_PRICE_PER_HA_EUR`. Si no está definida o es 0, la facturación
+ * automática se rechaza con error claro (no factura con 0 €).
+ *
+ * En v1.0 es global. En v1.1 evaluaremos overrides por cliente (tarifa
+ * cooperativa vs agricultor individual) sin tocar el shape de la factura.
+ */
+export function getPricePerHaEur(): number {
+  const raw = process.env.AGROOPS_PRICE_PER_HA_EUR;
+  if (!raw) return 0;
+  const n = parseFloat(raw);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+/**
+ * IVA aplicado en las facturas Holded. Default 21% (general España).
+ * Configurable vía `AGROOPS_INVOICE_VAT_PCT`. Si el cliente está bajo
+ * régimen agrario (4% o 10%), el operador puede ajustar en Holded
+ * después; la factura llega ya con el porcentaje base.
+ */
+export function getInvoiceVatPct(): number {
+  const raw = process.env.AGROOPS_INVOICE_VAT_PCT;
+  if (!raw) return 21;
+  const n = parseFloat(raw);
+  return Number.isFinite(n) && n >= 0 && n <= 100 ? n : 21;
+}

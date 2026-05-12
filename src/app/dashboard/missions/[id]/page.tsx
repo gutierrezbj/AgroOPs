@@ -17,11 +17,13 @@ import { listDrones } from "@/features/fleet/services";
 import { listPilots } from "@/features/fleet/pilots/services";
 import { listParcels } from "@/features/parcels/services";
 import { getMission } from "@/features/missions/services";
+import { getInvoiceForMission } from "@/features/invoicing/services";
 import { MissionForm } from "@/features/missions/components/MissionForm";
 import { MissionParcelsSelector } from "@/features/missions/components/MissionParcelsSelector";
 import { MissionStatusBadge } from "@/features/missions/components/MissionStatusBadge";
 import { TransitionActions } from "@/features/missions/components/TransitionActions";
 import { CompleteMissionForm } from "@/features/missions/components/CompleteMissionForm";
+import { InvoicePanel } from "@/features/invoicing/components/InvoicePanel";
 
 export const metadata = { title: "AgroOps — Misión" };
 export const dynamic = "force-dynamic";
@@ -43,12 +45,14 @@ export default async function MissionDetailPage({ params }: MissionPageProps) {
   const session = await auth();
   const canWrite = hasRole(session, ROLES.WRITERS);
 
-  const [clients, drones, pilots, allParcels] = await Promise.all([
+  const [clients, drones, pilots, allParcels, invoice] = await Promise.all([
     listClients(),
     listDrones(),
     listPilots(),
     listParcels({ clientId: mission.clientId }),
+    getInvoiceForMission(mission.id),
   ]);
+  const canDispatchInvoice = hasRole(session, ROLES.ADMIN_ONLY);
 
   const selectedParcelIds = mission.parcels.map((p) => p.parcel.id);
   const summedAreaHa = mission.parcels.reduce(
@@ -239,6 +243,17 @@ export default async function MissionDetailPage({ params }: MissionPageProps) {
             defaultAreaHa={summedAreaHa > 0 ? summedAreaHa.toString() : null}
           />
         </section>
+      )}
+
+      {(mission.status === "completed" ||
+        mission.status === "invoiced" ||
+        invoice) && (
+        <InvoicePanel
+          missionId={mission.id}
+          missionStatus={mission.status}
+          invoice={invoice}
+          canDispatch={canDispatchInvoice}
+        />
       )}
 
       {canWrite && (

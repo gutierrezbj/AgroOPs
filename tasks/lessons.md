@@ -233,4 +233,31 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-12 · Side-effect ANTES del gate replicable para integraciones externas
+
+**Contexto:** HU-19 disparo automático de factura en `transitionMission(completed→invoiced)`. Decidir dónde poner la llamada a Holded en el flujo del state machine: ¿antes del gate, dentro del gate, o después?
+**Qué se descubrió:** el patrón ya usado en HU-13 (auto-captura meteo en `approved→preflight`) funciona también aquí. El side-effect debe ejecutarse ANTES del `evaluateGate`, así éste puede evaluar el resultado real (existe `invoices_ref` con status=`issued`) en vez de simular o asumir. Si Holded falla, la factura queda en `invoices_ref` con status=`error` y mensaje; el gate falla con error duro "no hay factura emitida" y bloquea la transición. El operador ve el error en la UI, corrige, y reintenta.
+**Solución / patrón adoptado:** todo side-effect que dependa de integración externa al transitar (Holded, AEMET, en el futuro DroneHub, FitoLink) se hace ANTES de `evaluateGate`, los errores se loguean pero NO se re-throw del service (caller no quiere stack traces), y el gate decide con datos reales. El `GateContext` se amplía con campos opcionales (`albaranSigned`, `invoiceStatus`, `clientHoldedSynced`, etc.) que el service carga solo cuando son relevantes para la transición (no cargar `invoiceStatus` en `draft→planned`). Patrón replicable para HU-20 (sync invoice status) y futuras integraciones.
+**Referencia:** `src/features/missions/services.ts` — bloque "HU-19" en `transitionMission`. `src/features/missions/state-machine.ts` — `GateContext.albaranSigned/invoiceStatus/clientHoldedSynced` opcionales.
+
+---
+
+## 2026-05-12 · InvoicingError tipado vs HoldedError: dos capas de errores con kind discriminante
+
+**Contexto:** HU-19 facturación. Hay dos capas de errores posibles: (1) prerequisitos AgroOps no se cumplen (sin albarán, sin precio configurado, etc.) — detectables antes de tocar Holded; (2) Holded falla (API key inválida, rate limit, etc.) — solo después de la red. Ambos necesitan `kind` discriminante para que la UI muestre hints específicos.
+**Qué se descubrió:** mezclar las dos capas en una sola clase pierde claridad. `HoldedError` ya tiene su jerarquía (`not-configured / unauthorized / rate-limited / server-error / network / bad-response`). Los errores AgroOps son distintos: `mission-not-completed`, `albaran-not-signed`, `client-not-synced`, `price-not-configured`, `area-missing`, `already-invoiced`, `mission-not-found`, `albaran-missing`. Si uso `HoldedError` para todo, mezclo "API key inválida" con "tu cliente no tiene holdedContactId" — pero la solución a uno (configurar env) no aplica al otro (sincronizar el cliente).
+**Solución / patrón adoptado:** dos clases con `kind` propios. La server action captura ambas: `if (err instanceof InvoicingError) return { reason: err.kind }` y `if (err instanceof HoldedError) return { reason: err.kind }`. El tipo `DispatchInvoiceState.reason` es la UNIÓN de ambos kind + `forbidden` + `internal`. La función `reasonHint()` en el componente cliente mapea cada uno a un mensaje accionable distinto. Patrón replicable cuando un workflow tiene N capas de validación (entrada local + integración externa).
+**Referencia:** `src/features/invoicing/services.ts` — `InvoicingError`. `src/features/invoicing/actions/dispatch-invoice.ts` — captura múltiple en orden de especificidad (Forbidden → Invoicing → Holded → Error genérico).
+
+---
+
+## 2026-05-12 · Pricing en env vars sin migración: tarifa por hectárea + IVA configurable
+
+**Contexto:** HU-19 necesita calcular el subtotal de la factura. ¿De dónde viene el precio? Opciones: campo en `missions` (migración), tabla `pricing_tiers` (más migración + UI), env var.
+**Qué se decidió:** v1.0 — env var global. `AGROOPS_PRICE_PER_HA_EUR=25.00` + `AGROOPS_INVOICE_VAT_PCT=21`. Si no hay precio configurado o es 0, la facturación lanza `InvoicingError("price-not-configured", ...)` antes de tocar Holded. El operador ve el error en la UI con hint "Define AGROOPS_PRICE_PER_HA_EUR en .env.local". Funciones `getPricePerHaEur()` y `getInvoiceVatPct()` en `lib/constants.ts` parsean con fall-safe (NaN → 0 para precio = no facturar; NaN → 21 para IVA = default seguro). REAGP (4% / 10%) soportado vía override de env.
+**Por qué no migración v1.0:** AgroM es single-tenant y único operador. Una tarifa global cubre el 100% de los casos hasta v1.1 (cuando evaluemos override por cliente si John pide tarifas diferenciadas cooperativa vs individual). Migrar ahora a una tabla `pricing` añade complejidad sin valor inmediato. Si más adelante hace falta, el cambio es localizado (cambiar getPricePerHaEur por lookup en DB).
+**Referencia:** `src/lib/constants.ts` — `getPricePerHaEur()`, `getInvoiceVatPct()`. `.env.example` documenta defaults. `src/features/invoicing/services.test.ts` cubre las distintas configuraciones.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->

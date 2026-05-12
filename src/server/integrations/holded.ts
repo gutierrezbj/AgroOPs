@@ -342,21 +342,21 @@ export async function findOrCreateHoldedContact(
 }
 
 // ============================================================================
-// HU-19 / HU-20 — Stubs (se implementan en próximas HUs)
+// HU-19 — Disparo de factura
 // ============================================================================
 
 export const holdedInvoicePayloadSchema = z.object({
-  contactId: z.string(),
+  contactId: z.string().min(1),
   contactName: z.string().optional(),
-  desc: z.string(),
-  date: z.number(), // unix timestamp en segundos
+  desc: z.string().min(1), // descripción de la factura (concepto general)
+  date: z.number().int().positive(), // unix timestamp en segundos
   items: z
     .array(
       z.object({
-        name: z.string(),
-        units: z.number(),
-        subtotal: z.number(),
-        tax: z.number().optional(),
+        name: z.string().min(1),
+        units: z.number().positive(),
+        subtotal: z.number().min(0), // precio unitario sin IVA
+        tax: z.number().min(0).max(100).optional(), // IVA en %
       }),
     )
     .min(1),
@@ -372,20 +372,65 @@ export type HoldedInvoiceResult = {
   currency?: string;
 };
 
+/**
+ * Schema de la respuesta de POST /documents/invoice de Holded. Holded suele
+ * devolver `{ status: 1, info: "OK", id: "..." }`. Algunos endpoints
+ * extendidos devuelven `invoiceNum` y `total`. Lo parseamos permisivamente.
+ */
+const createInvoiceResponseSchema = z.object({
+  status: z.number().optional(),
+  id: z.string(),
+  info: z.string().optional(),
+  invoiceNum: z.union([z.string(), z.number()]).optional(),
+  total: z.number().optional(),
+  currency: z.string().optional(),
+});
+
+/**
+ * HU-19 — Dispara una factura en Holded.
+ *
+ * Tipo de documento: `invoice` (facturas emitidas). En Holded, el endpoint
+ * canónico es `POST /documents/invoice`. La respuesta confirma con el `id`
+ * de la factura creada; lo persistimos en `invoices_ref` para reconciliar
+ * en HU-20.
+ */
 export async function createHoldedInvoice(
-  _payload: HoldedInvoicePayload,
+  payload: HoldedInvoicePayload,
 ): Promise<HoldedInvoiceResult> {
-  // HU-19 — pendiente.
-  throw new HoldedError(
-    "server-error",
-    "createHoldedInvoice: pendiente HU-19.",
-  );
+  const parsed = holdedInvoicePayloadSchema.parse(payload);
+  const raw = await holdedFetch("/documents/invoice", {
+    method: "POST",
+    body: JSON.stringify(parsed),
+  });
+  const resp = createInvoiceResponseSchema.parse(raw);
+
+  // Holded a veces devuelve `status: 0` con `info: "ya existe..."` en 200 OK.
+  // Eso indica error de negocio aunque HTTP sea 200.
+  if (resp.status !== undefined && resp.status !== 1) {
+    throw new HoldedError(
+      "bad-response",
+      `Holded rechazó la factura: ${resp.info ?? "sin detalle"}`,
+    );
+  }
+
+  return {
+    invoiceId: resp.id,
+    invoiceNumber:
+      typeof resp.invoiceNum === "number"
+        ? String(resp.invoiceNum)
+        : resp.invoiceNum,
+    amount: resp.total,
+    currency: resp.currency ?? "EUR",
+  };
 }
+
+// ============================================================================
+// HU-20 — Sincronización de estado de factura (stub)
+// ============================================================================
 
 export async function syncHoldedInvoiceStatus(
   _invoiceId: string,
 ): Promise<{ status: string; paidAt?: Date | null }> {
-  // HU-20 — pendiente.
   throw new HoldedError(
     "server-error",
     "syncHoldedInvoiceStatus: pendiente HU-20.",

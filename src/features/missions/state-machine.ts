@@ -58,12 +58,21 @@ export const TRANSITION_ROLES: Record<string, readonly UserRole[]> = {
 /**
  * Contexto necesario para evaluar gates. Lo construye el service antes de
  * llamar a `evaluateGate` (joins de drone, pilot, count de mission_parcels).
+ *
+ * HU-19: añadidos `albaranSigned` e `invoiceStatus` para el gate
+ * `completed → invoiced`.
  */
 export interface GateContext {
   mission: Mission;
   drone: Drone | null;
   pilot: Pilot | null;
   parcelCount: number;
+  /** True si existe albaran con `signedAt != null` para esta misión. */
+  albaranSigned?: boolean;
+  /** Status del invoices_ref si existe, null si no hay row. */
+  invoiceStatus?: "pending" | "issued" | "paid" | "cancelled" | "error" | null;
+  /** Cliente sincronizado con Holded (holdedContactId presente). */
+  clientHoldedSynced?: boolean;
 }
 
 export interface GateResult {
@@ -207,12 +216,32 @@ export function evaluateGate(
     }
   }
 
-  // ─── completed → invoiced: requiere albarán firmado + invoice_ref creada.
-  // HU-15+ creará el albarán; en v1 sólo aviso.
+  // ─── completed → invoiced (HU-19): requiere albarán firmado +
+  // cliente Holded-sincronizado + factura emitida (el service de
+  // transitionMission dispara `createInvoiceForMission` ANTES del gate,
+  // así aquí evaluamos el resultado real).
   if (from === "completed" && to === "invoiced") {
-    warnings.push(
-      "Verificar que existe albarán firmado y referencia Holded antes de marcar como facturada (HU-15..20)",
-    );
+    if (ctx.albaranSigned === false) {
+      errors.push(
+        "El albarán de la misión no está firmado por el agricultor",
+      );
+    } else if (ctx.albaranSigned === undefined) {
+      warnings.push("Verificar firma del albarán (estado no cargado en contexto)");
+    }
+    if (ctx.clientHoldedSynced === false) {
+      errors.push(
+        "El cliente no está vinculado con Holded. Sincronízalo en /dashboard/clients/[id] antes de facturar",
+      );
+    }
+    if (ctx.invoiceStatus === "error") {
+      errors.push(
+        "El último intento de factura falló en Holded. Revisa el error en el panel de la misión y reintenta",
+      );
+    } else if (ctx.invoiceStatus !== "issued" && ctx.invoiceStatus !== "paid") {
+      errors.push(
+        "No hay factura emitida (issued) en Holded para esta misión",
+      );
+    }
   }
 
   return {

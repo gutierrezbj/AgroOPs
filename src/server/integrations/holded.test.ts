@@ -322,6 +322,134 @@ describe("createHoldedContact", () => {
 // ---------------------------------------------------------------------------
 // findOrCreateHoldedContact
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// createHoldedInvoice (HU-19)
+// ---------------------------------------------------------------------------
+describe("createHoldedInvoice (HU-19)", () => {
+  const validPayload = {
+    contactId: "ctc_42",
+    contactName: "Cooperativa La Solana",
+    desc: "Aplicación fitosanitaria aérea — AGM-2026-0001",
+    date: Math.floor(Date.now() / 1000),
+    items: [
+      {
+        name: "Aplicación fitosanitaria aérea (4.50 ha × 25.00 €/ha)",
+        units: 4.5,
+        subtotal: 25.0,
+        tax: 21,
+      },
+    ],
+  };
+
+  it("envía POST /documents/invoice y normaliza la respuesta", async () => {
+    const { createHoldedInvoice } = await loadHolded();
+    const spy = mockFetch({
+      status: 200,
+      json: {
+        status: 1,
+        info: "OK",
+        id: "inv_abc123",
+        invoiceNum: "2026-1042",
+        total: 136.13,
+        currency: "EUR",
+      },
+    });
+    vi.stubGlobal("fetch", spy);
+
+    const result = await createHoldedInvoice(validPayload);
+
+    expect(result).toEqual({
+      invoiceId: "inv_abc123",
+      invoiceNumber: "2026-1042",
+      amount: 136.13,
+      currency: "EUR",
+    });
+    const call = spy.mock.calls[0] as unknown as [string, RequestInit];
+    expect(call[0]).toMatch(/\/documents\/invoice$/);
+    expect(call[1].method).toBe("POST");
+    const body = JSON.parse(call[1].body as string) as Record<string, unknown>;
+    expect(body.contactId).toBe("ctc_42");
+    expect(body.items).toHaveLength(1);
+  });
+
+  it("normaliza invoiceNum numérico a string", async () => {
+    const { createHoldedInvoice } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 200,
+        json: { status: 1, id: "inv_xyz", invoiceNum: 999 },
+      }),
+    );
+    const result = await createHoldedInvoice(validPayload);
+    expect(result.invoiceNumber).toBe("999");
+    expect(typeof result.invoiceNumber).toBe("string");
+  });
+
+  it("default currency EUR si Holded no lo devuelve", async () => {
+    const { createHoldedInvoice } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 200,
+        json: { status: 1, id: "inv_eur" },
+      }),
+    );
+    const result = await createHoldedInvoice(validPayload);
+    expect(result.currency).toBe("EUR");
+  });
+
+  it("lanza HoldedError bad-response si Holded devuelve status=0 con info", async () => {
+    const { createHoldedInvoice, HoldedError } = await loadHolded();
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 200,
+        json: {
+          status: 0,
+          id: "inv_dup",
+          info: "Ya existe una factura con ese número",
+        },
+      }),
+    );
+    try {
+      await createHoldedInvoice(validPayload);
+      expect.fail("debió lanzar");
+    } catch (err) {
+      const e = err as InstanceType<typeof HoldedError>;
+      expect(e).toBeInstanceOf(HoldedError);
+      expect(e.kind).toBe("bad-response");
+      expect(e.message).toContain("Ya existe");
+    }
+  });
+
+  it("propaga errores HoldedError genéricos (401, 5xx, etc.)", async () => {
+    const { createHoldedInvoice, HoldedError } = await loadHolded();
+    vi.stubGlobal("fetch", mockFetch({ status: 401 }));
+    try {
+      await createHoldedInvoice(validPayload);
+      expect.fail("debió lanzar");
+    } catch (err) {
+      expect((err as InstanceType<typeof HoldedError>).kind).toBe(
+        "unauthorized",
+      );
+    }
+  });
+
+  it("valida payload con Zod antes de tocar fetch", async () => {
+    const { createHoldedInvoice } = await loadHolded();
+    const spy = mockFetch({ status: 200, json: { id: "inv_x" } });
+    vi.stubGlobal("fetch", spy);
+    await expect(
+      createHoldedInvoice({
+        ...validPayload,
+        contactId: "", // inválido (min(1))
+      }),
+    ).rejects.toThrow();
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
 describe("findOrCreateHoldedContact", () => {
   const client = {
     name: "Cooperativa La Solana",

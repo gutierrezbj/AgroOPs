@@ -356,6 +356,103 @@ describe("evaluateGate — approved → preflight", () => {
   });
 });
 
+describe("evaluateGate — completed → invoiced (HU-19)", () => {
+  const baseCtx = {
+    mission: makeMission({
+      status: "completed" as const,
+      areaTreatedHa: "4.5",
+    }),
+    drone: makeDrone(),
+    pilot: makePilot(),
+    parcelCount: 2,
+  };
+
+  it("pasa con albarán firmado + cliente sync + invoice issued", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      clientHoldedSynced: true,
+      invoiceStatus: "issued",
+    });
+    expect(result.ok).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  it("pasa también con factura ya pagada", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      clientHoldedSynced: true,
+      invoiceStatus: "paid",
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("rechaza si albarán no firmado", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: false,
+      clientHoldedSynced: true,
+      invoiceStatus: "issued",
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((e) => /albar/i.test(e))).toBe(true);
+  });
+
+  it("rechaza si cliente no sincronizado con Holded", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      clientHoldedSynced: false,
+      invoiceStatus: "issued",
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((e) => /Holded/i.test(e))).toBe(true);
+  });
+
+  it("rechaza si la factura está en estado error", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      clientHoldedSynced: true,
+      invoiceStatus: "error",
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((e) => /factura.*fall/i.test(e))).toBe(true);
+  });
+
+  it("rechaza si no hay factura emitida (null)", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      clientHoldedSynced: true,
+      invoiceStatus: null,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errors.some((e) => /factura emitida/i.test(e))).toBe(true);
+  });
+
+  it("rechaza si la factura está pending (no llegó al issued)", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: true,
+      clientHoldedSynced: true,
+      invoiceStatus: "pending",
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("warning si albaranSigned es undefined (contexto no cargado)", () => {
+    const result = evaluateGate("completed", "invoiced", {
+      ...baseCtx,
+      albaranSigned: undefined,
+      clientHoldedSynced: true,
+      invoiceStatus: "issued",
+    });
+    expect(result.warnings.some((w) => /firma/i.test(w))).toBe(true);
+  });
+});
+
 describe("evaluateGate — cancelación", () => {
   it("permite cancelar desde cualquier estado no-terminal", () => {
     for (const from of [

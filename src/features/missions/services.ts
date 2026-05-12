@@ -12,6 +12,7 @@
  */
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
+import { albarans } from "@/db/schema/albarans";
 import { clients, type Client } from "@/db/schema/clients";
 import { drones, type Drone } from "@/db/schema/drones";
 import { missionParcels } from "@/db/schema/mission-parcels";
@@ -26,6 +27,12 @@ import { pilots, type Pilot } from "@/db/schema/pilots";
 import { nextMissionCode } from "@/lib/mission-codes";
 import { NPTA_DROVINCI } from "@/lib/constants";
 import { captureWeatherForCoordinates } from "@/server/integrations/aemet";
+import {
+  createInvoiceForMission,
+  getInvoiceForMission,
+  InvoicingError,
+} from "@/features/invoicing/services";
+import { HoldedError } from "@/server/integrations/holded";
 import type {
   CompleteMissionInput,
   CreateMissionInput,
@@ -372,6 +379,38 @@ export async function transitionMission(
     }
   }
 
+  // ─── HU-19: disparo automático de factura en completed → invoiced ─────
+  // Patrón idéntico a HU-13: side-effect ANTES del gate, así éste decide
+  // con datos reales (existencia de invoice_ref) si bloquea o no.
+  //
+  // Si ya hay invoice issued, no duplicamos. Si no, intentamos crear.
+  // Si Holded falla, persistimos invoice_ref con status=error y NO
+  // transitamos (el gate falla porque no hay invoice issued).
+  if (from === "completed" && targetStatus === "invoiced") {
+    const existing = await getInvoiceForMission(id);
+    if (!existing || existing.status !== "issued") {
+      try {
+        await createInvoiceForMission(id);
+      } catch (err) {
+        if (err instanceof InvoicingError) {
+          // Prerequisito faltante (sin albarán, sin precio, etc.) — el gate lo recogerá
+          console.warn(
+            `[transitionMission] factura no disparada (${err.kind}):`,
+            err.message,
+          );
+        } else if (err instanceof HoldedError) {
+          // Fallo Holded — invoice_ref ya quedó con status=error. El gate falla.
+          console.warn(
+            `[transitionMission] Holded rechazó factura (${err.kind}):`,
+            err.message,
+          );
+        } else {
+          console.warn("[transitionMission] error inesperado al facturar:", err);
+        }
+      }
+    }
+  }
+
   // Cargar contexto para el gate
   const drone = mission.droneId
     ? ((await db.select().from(drones).where(eq(drones.id, mission.droneId)).limit(1))[0] ?? null)
@@ -385,7 +424,38 @@ export async function transitionMission(
     .where(eq(missionParcels.missionId, id));
   const parcelCount = parcelCountResult[0]?.count ?? 0;
 
-  const ctx: GateContext = { mission, drone, pilot, parcelCount };
+  // HU-19: contexto extra para gate completed → invoiced
+  let albaranSigned: boolean | undefined;
+  let invoiceStatus: GateContext["invoiceStatus"];
+  let clientHoldedSynced: boolean | undefined;
+  if (from === "completed" && targetStatus === "invoiced") {
+    const [albaranRow] = await db
+      .select({ signedAt: albarans.signedAt })
+      .from(albarans)
+      .where(eq(albarans.missionId, id))
+      .limit(1);
+    albaranSigned = Boolean(albaranRow?.signedAt);
+
+    const [clientRow] = await db
+      .select({ holdedContactId: clients.holdedContactId })
+      .from(clients)
+      .where(eq(clients.id, mission.clientId))
+      .limit(1);
+    clientHoldedSynced = Boolean(clientRow?.holdedContactId);
+
+    const invoice = await getInvoiceForMission(id);
+    invoiceStatus = invoice?.status ?? null;
+  }
+
+  const ctx: GateContext = {
+    mission,
+    drone,
+    pilot,
+    parcelCount,
+    albaranSigned,
+    invoiceStatus,
+    clientHoldedSynced,
+  };
   const gate = evaluateGate(from, targetStatus, ctx);
   if (!gate.ok) {
     return { ok: false, error: gate.errors.join(" · "), gate };

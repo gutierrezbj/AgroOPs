@@ -1210,3 +1210,147 @@ main button:disabled {
   font-size: 0.8rem;
   font-style: italic;
 }
+
+/* =============================================================================
+ * Invoice panel (HU-19) — factura Holded sobre misión
+ * ========================================================================== */
+
+.invoice-panel {
+  margin: 1.5rem 0;
+  padding: 1.15rem 1.25rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-action);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-subtle);
+}
+
+.invoice-panel__header h2 {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-strong);
+}
+
+.invoice-panel__header p {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  max-width: 60ch;
+}
+
+.invoice-panel__empty {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.invoice-panel__data {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0 0 1rem;
+  align-items: baseline;
+}
+
+.invoice-panel__data > dt {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.invoice-panel__data > dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.invoice-panel__timestamp {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.invoice-panel__badge {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.invoice-panel__badge--ok {
+  background: color-mix(in srgb, var(--accent-ok) 22%, transparent);
+  color: var(--accent-ok);
+}
+
+.invoice-panel__badge--info {
+  background: color-mix(in srgb, var(--accent-info) 22%, transparent);
+  color: var(--accent-info);
+}
+
+.invoice-panel__badge--warn {
+  background: color-mix(in srgb, var(--accent-warn) 25%, transparent);
+  color: var(--accent-warn);
+}
+
+.invoice-panel__badge--danger {
+  background: color-mix(in srgb, var(--accent-danger) 22%, transparent);
+  color: var(--accent-danger);
+}
+
+.invoice-panel__error-msg {
+  margin: 0;
+  color: var(--accent-danger);
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.invoice-panel__btn {
+  appearance: none;
+  background: var(--accent-action);
+  color: var(--surface-elevated);
+  border: 1px solid var(--accent-action);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-base);
+  font: inherit;
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.invoice-panel__btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.invoice-panel__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.invoice-panel__success {
+  margin: 0.75rem 0 0;
+  padding: 0.55rem 0.85rem;
+  background: color-mix(in srgb, var(--accent-ok) 12%, var(--surface-elevated));
+  border-left: 3px solid var(--accent-ok);
+  border-radius: var(--radius-base);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.invoice-panel__feedback-error {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  background: color-mix(in srgb, var(--accent-danger) 10%, var(--surface-elevated));
+  border-left: 3px solid var(--accent-danger);
+  border-radius: var(--radius-base);
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.invoice-panel__hint {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
