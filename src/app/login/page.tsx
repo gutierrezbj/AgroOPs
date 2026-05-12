@@ -1,22 +1,30 @@
 /**
  * AgroOps — /login
  *
- * Página pública de login. Identity Sprint pendiente: styling productivo
- * llega cuando se cierren los 6 pasos del Design System. Por ahora layout
- * funcional con clases CSS placeholder.
+ * Identity Sprint v1 aplicado: logo wordmark SVG (Fraunces 500/900 con punto terra
+ * sobre la primera 'O' de Ops), tagline corporativo, footer con paraguas Drovinci.
+ * Tokens de paleta / tipografía consumidos vía `src/app/globals.css`.
  */
+import Image from "next/image";
 import { Suspense } from "react";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 
 export const metadata = {
-  title: "AgroOps — Iniciar sesión",
+  title: "Iniciar sesión",
 };
 
 export default function LoginPage() {
   return (
     <main className="login-page">
       <header className="login-page__header">
-        <h1>AgroOps</h1>
+        <Image
+          src="/agroops-logo.svg"
+          alt="AgroOps"
+          width={360}
+          height={100}
+          priority
+          className="login-page__logo"
+        />
         <p>Sistema de operaciones UAS para aplicación fitosanitaria.</p>
       </header>
       <Suspense>

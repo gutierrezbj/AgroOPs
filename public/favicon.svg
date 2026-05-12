@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AgroOps favicon">
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#1B4332"/>
+  <circle cx="32" cy="6" r="4" fill="#E07A3C"/>
+  <text x="32" y="48"
+        text-anchor="middle"
+        font-family="Fraunces, Georgia, serif"
+        font-size="40"
+        font-weight="900"
+        fill="#F4F0E8"
+        style="font-variation-settings:'opsz' 144;">M</text>
+</svg>

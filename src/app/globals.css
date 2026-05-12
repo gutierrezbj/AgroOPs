@@ -1,106 +1,192 @@
 @import "tailwindcss";
 
+/* =============================================================================
+ * AgroOps — Identity Tokens v1 (Sprint 1, light-only)
+ *
+ * Materialización de las decisiones del Identity Sprint AgroOps. Fuente:
+ * Notion → "Identity Tokens v1 — Para aplicar en código (Sprint 1)".
+ *
+ * Paleta heredada de AgroM + extensión semántica. Tipografía Fraunces +
+ * IBM Plex Sans + IBM Plex Mono (Google Fonts, ninguna en la blacklist
+ * SRS). Density cómodo, shadows sutil, dark mode planificado v1.2.
+ * ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* — Paleta semántica (9 slots SaaS) ─────────────────────────────────────── */
+  --primary: #1b4332;            /* deep — verde profundo, brand primary */
+  --surface: #f4f0e8;            /* paper — crema cálida, body/main */
+  --surface-elevated: #e8ddc9;   /* parch — papel teja, cards/fieldsets */
+  --border: #c9a876;             /* rule — hairline terra-oro */
+  --text-strong: #0f2a22;        /* ink — texto principal y titulares */
+  --text-soft: #6b6b5c;          /* muted — captions, labels dl, small */
+  --accent-action: #1b4332;      /* = deep — botones submit, links primarios */
+  --accent-ok: #3a7d44;          /* success — activo, OK, vuelo apto */
+  --accent-warn: #d49343;        /* warning — meteo límite, próximo caducar */
+  --accent-danger: #b8312f;      /* alert — cancelado, retirado, error */
+
+  /* — Acento de marca puntual (no es CTA) ─────────────────────────────────── */
+  --brand-accent: #e07a3c;       /* terra — drone markers en mapa, focos editoriales */
+
+  /* — Info adicional ──────────────────────────────────────────────────────── */
+  --accent-info: #5b7a8f;        /* banners neutros informativos */
+
+  /* — Familias tipográficas ──────────────────────────────────────────────── */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-heading: "Fraunces", Georgia, serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* — Radius ──────────────────────────────────────────────────────────────── */
+  --radius-base: 4px;
+  --radius-lg: 6px;
+  --radius-pill: 9999px;
+
+  /* — Shadows sutil (no none, no marcada) ────────────────────────────────── */
+  --shadow-none: none;
+  --shadow-subtle: 0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 10px 30px -15px rgba(15, 42, 34, 0.15);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 4px 12px -4px rgba(15, 42, 34, 0.1);
+
+  /* — Density cómodo ──────────────────────────────────────────────────────── */
+  --space-tight: 8px;
+  --space-cozy: 12px;
+  --space-loose: 20px;
+
+  /* — Layout ──────────────────────────────────────────────────────────────── */
+  --content-max: 1100px;
+  --content-wide: 1280px;
+  --sidebar-width: 240px;
+
+  /* — Compat scaffold Next (no se usan, pero evita referencias rotas) ────── */
+  --background: var(--surface);
+  --foreground: var(--text-strong);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  --color-background: var(--surface);
+  --color-foreground: var(--text-strong);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
 }
 
 /* =============================================================================
- * Estructura mínima — Sprint 1 (anti-Identity-Sprint, sólo layout/espaciado).
- *
- * Reglas que respetamos hasta cierre del Identity Sprint:
- * - Sin paleta de marca (sólo neutros + rojo error / verde OK universales).
- * - Sin tipografía custom (hereda del body).
- * - Sin animaciones, sin gradientes, sin shadows decorativos.
- * - Sólo lo necesario para que la app sea usable (inputs visibles, labels
- *   apilados, tablas legibles, links distinguibles).
- *
- * Cuando llegue el Identity Sprint cerrado, este bloque se reescribe con tokens
- * reales (paleta vertical AgroOps + tipografía decidida en pasos 4-5).
+ * Base
+ * ========================================================================== */
+
+html {
+  background: var(--surface);
+}
+
+body {
+  background: var(--surface);
+  color: var(--text-strong);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variation-settings: "opsz" 144, "SOFT" 0;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+h2,
+h3,
+.heading {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-variation-settings: "opsz" 48, "SOFT" 0;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.mono,
+code,
+kbd,
+.tabular {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================================
+ * Layout principal
  * ========================================================================== */
 
 main {
-  max-width: 1100px;
+  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 1.5rem 1.25rem;
+  padding: 1.5rem 1.25rem 4rem;
 }
 
 main > header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--border);
   padding-bottom: 1rem;
 }
 
 main > header h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 0.25rem;
+  font-size: 1.85rem;
+  margin: 0 0 0.35rem;
+  color: var(--text-strong);
 }
 
 main > header p {
   margin: 0.25rem 0;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--text-soft);
 }
 
 main h2 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  margin: 1.75rem 0 0.85rem;
+  color: var(--text-strong);
+}
+
+main h3 {
+  font-size: 1.02rem;
+  font-family: var(--font-body);
   font-weight: 600;
-  margin: 1.5rem 0 0.75rem;
+  letter-spacing: 0;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--text-strong);
 }
 
 main a {
-  color: #1f4cab;
+  color: var(--accent-action);
   text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
 }
 
-@media (prefers-color-scheme: dark) {
-  main > header {
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-  }
-  main > header p,
-  main p code,
-  main dl dt,
-  main small {
-    color: rgba(255, 255, 255, 0.7);
-  }
-  main a {
-    color: #7ea2ee;
-  }
+main a:hover {
+  text-decoration-thickness: 2px;
 }
 
-main code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+main code,
+main kbd {
+  font-family: var(--font-mono);
   font-size: 0.875em;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 0.05em 0.35em;
-  border-radius: 3px;
+  background: rgba(27, 67, 50, 0.07);
+  color: var(--text-strong);
+  padding: 0.08em 0.4em;
+  border-radius: var(--radius-base);
 }
 
-@media (prefers-color-scheme: dark) {
-  main code {
-    background: rgba(255, 255, 255, 0.08);
-  }
+main small {
+  color: var(--text-soft);
 }
+
+/* =============================================================================
+ * Botones
+ * ========================================================================== */
 
 main button,
 main .btn-primary,
@@ -108,74 +194,97 @@ main .btn-danger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.55rem 1rem;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  border-radius: 4px;
-  background: #fff;
-  color: inherit;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  background: var(--surface-elevated);
+  color: var(--text-strong);
   cursor: pointer;
   font: inherit;
+  font-weight: 500;
   text-decoration: none;
-  min-height: 2.25rem;
+  min-height: 2.35rem;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+main button:hover:not(:disabled),
+main .btn-primary:hover,
+main .btn-danger:hover {
+  border-color: var(--text-strong);
 }
 
 main button[type="submit"],
 main .btn-primary {
-  background: #111;
-  color: #fff;
-  border-color: #111;
+  background: var(--accent-action);
+  color: var(--surface);
+  border-color: var(--accent-action);
+  box-shadow: var(--shadow-subtle);
+}
+
+main button[type="submit"]:hover:not(:disabled),
+main .btn-primary:hover {
+  background: var(--text-strong);
+  border-color: var(--text-strong);
 }
 
 main .btn-danger {
-  background: #b91c1c;
-  color: #fff;
-  border-color: #b91c1c;
+  background: var(--accent-danger);
+  color: var(--surface);
+  border-color: var(--accent-danger);
+  box-shadow: var(--shadow-subtle);
+}
+
+main .btn-danger:hover {
+  background: #8a2422;
+  border-color: #8a2422;
 }
 
 main button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  main button {
-    background: #1a1a1a;
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-  main button[type="submit"],
-  main .btn-primary {
-    background: #ededed;
-    color: #111;
-    border-color: #ededed;
-  }
-}
-
-/* -- Formularios genéricos -------------------------------------------------- */
+/* =============================================================================
+ * Forms
+ * ========================================================================== */
 
 .auth-form,
 .drone-form {
   display: block;
-  max-width: 480px;
+  max-width: 520px;
+}
+
+.drone-form {
+  max-width: 680px;
 }
 
 .auth-form fieldset,
 .drone-form fieldset {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding: 1.25rem;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
+  gap: var(--space-cozy);
+  padding: 1.35rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-card);
 }
 
-.drone-form fieldset {
-  max-width: 640px;
+.auth-form fieldset[disabled],
+.drone-form fieldset[disabled] {
+  opacity: 0.85;
 }
 
 .auth-form legend,
 .drone-form legend {
   padding: 0 0.5rem;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-variation-settings: "opsz" 48;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
 }
 
 .auth-form label,
@@ -184,12 +293,15 @@ main button:disabled {
   flex-direction: column;
   gap: 0.3rem;
   font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-strong);
 }
 
 .drone-form label.drone-form__checkbox {
   flex-direction: row;
   align-items: center;
   gap: 0.55rem;
+  font-weight: 400;
 }
 
 .auth-form input,
@@ -199,13 +311,32 @@ main button:disabled {
 .drone-form select,
 .drone-form textarea {
   width: 100%;
-  padding: 0.5rem 0.65rem;
+  padding: 0.55rem 0.75rem;
   font: inherit;
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  border-radius: 4px;
-  background: #fff;
-  color: inherit;
+  font-weight: 400;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+  background: var(--surface);
+  color: var(--text-strong);
   box-sizing: border-box;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.auth-form input[type="number"],
+.drone-form input[type="number"],
+.drone-form input[name="serialNumber"],
+.drone-form input[name="nif"],
+.drone-form input[name="taxId"],
+.drone-form input[name="lotNumber"],
+.drone-form input[name="sigpacReference"],
+.drone-form input[name="mtomGrams"],
+.drone-form input[name="flightHours"],
+.drone-form input[name="payloadLitres"],
+.drone-form input[name="areaHectares"],
+.drone-form input[name="recommendedDoseValue"],
+.drone-form input[name="safetyPeriodDays"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .drone-form input[type="checkbox"] {
@@ -219,41 +350,37 @@ main button:disabled {
 .drone-form input:focus,
 .drone-form select:focus,
 .drone-form textarea:focus {
-  outline: 2px solid #1f4cab;
-  outline-offset: 1px;
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.15);
 }
 
 .auth-form input[aria-invalid="true"],
 .drone-form input[aria-invalid="true"],
 .drone-form select[aria-invalid="true"],
 .drone-form textarea[aria-invalid="true"] {
-  border-color: #b91c1c;
+  border-color: var(--accent-danger);
 }
 
-@media (prefers-color-scheme: dark) {
-  .auth-form input,
-  .auth-form select,
-  .auth-form textarea,
-  .drone-form input,
-  .drone-form select,
-  .drone-form textarea {
-    background: #1a1a1a;
-    border-color: rgba(255, 255, 255, 0.25);
-  }
+.auth-form input[aria-invalid="true"]:focus,
+.drone-form input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 3px rgba(184, 49, 47, 0.18);
 }
 
 .auth-form__error,
 .drone-form__error {
   margin: 0;
-  color: #b91c1c;
+  color: var(--accent-danger);
   font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .auth-form__success,
 .drone-form__success {
   margin: 0;
-  color: #166534;
+  color: var(--accent-ok);
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .auth-form__submit,
@@ -265,50 +392,92 @@ main button:disabled {
   flex-wrap: wrap;
 }
 
-/* -- Login / dashboard ----------------------------------------------------- */
+/* =============================================================================
+ * Login
+ * ========================================================================== */
 
 .login-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   max-width: 480px;
-  margin: 3rem auto;
+  margin: 4rem auto 2rem;
   padding: 0 1.25rem;
 }
 
+.login-page__header {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.login-page__logo {
+  display: block;
+  width: 220px;
+  max-width: 60vw;
+  height: auto;
+  margin: 0 auto 1rem;
+}
+
 .login-page__header h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 0.35rem;
+  /* Compat: si en algún momento se renderiza h1 textual en vez de SVG */
+  font-size: 2.2rem;
+  margin: 0 0 0.5rem;
 }
 
 .login-page__header p {
   margin: 0;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--text-soft);
+  font-size: 0.98rem;
+}
+
+.login-page__footer {
+  text-align: center;
 }
 
 .login-page__footer small {
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--text-soft);
   font-size: 0.78rem;
 }
+
+/* =============================================================================
+ * Dashboard / detail dl
+ * ========================================================================== */
 
 .dashboard__session dl,
 .drone-edit dl {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.35rem 1rem;
+  gap: 0.4rem 1.1rem;
   margin: 0.75rem 0 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-card);
 }
 
 .dashboard__session dt,
 .drone-edit dt {
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.7);
+  color: var(--text-soft);
+  font-size: 0.88rem;
 }
 
 .dashboard__session dd,
 .drone-edit dd {
   margin: 0;
+  color: var(--text-strong);
+}
+
+.dashboard__placeholder {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  background: rgba(232, 221, 201, 0.4);
+}
+
+.dashboard__placeholder h2 {
+  margin-top: 0;
 }
 
 .dashboard__placeholder ul {
@@ -317,116 +486,130 @@ main button:disabled {
 }
 
 .dashboard__placeholder li {
-  margin: 0.25rem 0;
+  margin: 0.3rem 0;
+  color: var(--text-soft);
 }
 
-/* -- Drones table --------------------------------------------------------- */
+/* =============================================================================
+ * Tablas
+ * ========================================================================== */
 
 .drones-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.9rem;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
 }
 
 .drones-table caption {
   text-align: left;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  caption-side: top;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-variation-settings: "opsz" 48;
+  font-size: 1.05rem;
+  margin-bottom: 0.6rem;
+  padding: 0;
+  color: var(--text-strong);
 }
 
 .drones-table th,
 .drones-table td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 0.6rem 0.55rem;
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-tight) 0.7rem;
   text-align: left;
   vertical-align: top;
 }
 
+.drones-table tr:last-child td {
+  border-bottom: 0;
+}
+
 .drones-table th {
+  font-family: var(--font-body);
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: rgba(0, 0, 0, 0.65);
-  border-bottom-width: 2px;
-  background: rgba(0, 0, 0, 0.025);
+  letter-spacing: 0.04em;
+  color: var(--text-soft);
+  border-bottom-width: 1px;
+  border-bottom-color: var(--border);
+  background: rgba(27, 67, 50, 0.06);
 }
 
 .drones-table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(244, 240, 232, 0.65);
 }
 
-@media (prefers-color-scheme: dark) {
-  .drones-table th,
-  .drones-table td {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-  }
-  .drones-table th {
-    background: rgba(255, 255, 255, 0.04);
-    color: rgba(255, 255, 255, 0.7);
-  }
-  .drones-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.04);
-  }
+.drones-table td code {
+  font-size: 0.85em;
+  background: transparent;
+  padding: 0;
 }
 
 .drones-table__empty {
-  padding: 1.25rem;
-  border: 1px dashed rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
+  padding: 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
   text-align: center;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--text-soft);
+  background: var(--surface-elevated);
 }
 
-/* -- Drone status badges (neutros, no colores de marca) ------------------- */
+/* =============================================================================
+ * State badges
+ * ========================================================================== */
 
 .drone-status {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.75rem;
+  padding: 0.18rem 0.6rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  border-radius: 999px;
+  font-family: var(--font-body);
+  border-radius: var(--radius-pill);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   border: 1px solid currentColor;
+  background: var(--surface);
+  white-space: nowrap;
 }
 
 .drone-status--active {
-  color: #166534;
-  background: rgba(22, 101, 52, 0.08);
+  color: var(--accent-ok);
+  background: rgba(58, 125, 68, 0.1);
 }
 
 .drone-status--maintenance {
-  color: #92400e;
-  background: rgba(146, 64, 14, 0.08);
+  color: var(--accent-warn);
+  background: rgba(212, 147, 67, 0.12);
 }
 
 .drone-status--retired {
-  color: rgba(0, 0, 0, 0.55);
-  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-soft);
+  background: rgba(107, 107, 92, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  .drone-status--retired {
-    color: rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.06);
-  }
-}
-
-/* -- Zona destructiva ----------------------------------------------------- */
+/* =============================================================================
+ * Zona destructiva
+ * ========================================================================== */
 
 .drone-edit__danger {
   margin-top: 2rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid #b91c1c;
-  border-radius: 6px;
-  background: rgba(185, 28, 28, 0.04);
+  padding: 1.1rem 1.4rem;
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--radius-lg);
+  background: rgba(184, 49, 47, 0.06);
 }
 
 .drone-edit__danger h2 {
   margin-top: 0;
-  color: #b91c1c;
+  color: var(--accent-danger);
 }
 
 .drone-edit__danger form {
@@ -434,9 +617,12 @@ main button:disabled {
   gap: 0.75rem;
   align-items: center;
   margin-top: 0.75rem;
+  flex-wrap: wrap;
 }
 
-/* -- Fleet index ---------------------------------------------------------- */
+/* =============================================================================
+ * Listas estilo fleet/clients index
+ * ========================================================================== */
 
 .fleet nav ul,
 .drones header ul {
@@ -447,5 +633,15 @@ main button:disabled {
 
 .fleet nav li,
 .drones header li {
-  margin: 0.4rem 0;
+  margin: 0.45rem 0;
+  color: var(--text-strong);
+}
+
+/* =============================================================================
+ * Signature pad — usa colores AgroOps
+ * ========================================================================== */
+
+.signature-pad canvas {
+  border-color: var(--border) !important;
+  border-radius: var(--radius-base);
 }

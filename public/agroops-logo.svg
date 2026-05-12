@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" role="img" aria-label="AgroOps">
+  <!-- punto terra encima de la primera 'O' de Ops -->
+  <circle cx="187" cy="14" r="6.5" fill="#E07A3C"/>
+  <!-- wordmark: 'Agro' peso 500, 'Ops' peso 900 -->
+  <text x="0" y="76"
+        font-family="Fraunces, Georgia, serif"
+        font-size="78"
+        font-weight="500"
+        fill="#0F2A22"
+        style="font-variation-settings:'opsz' 144,'SOFT' 0,'WONK' 0; letter-spacing:-0.025em;">Agro<tspan font-weight="900">Ops</tspan></text>
+</svg>

@@ -115,7 +115,7 @@ Cronograma SDD-08: **9 semanas v1.0** (Sprint 0 + 5 sprints).
 ## Despliegue
 
 - **Sin staging.** Mac local → push a `main` → CI verde → deploy automático a producción.
-- **Dominio:** `agroops.agrom.es` (propuesta).
+- **Dominio:** `agroops.systemrapid.io` (staging + operación interna AgroM). `app.agroops.es` queda reservado para producción comercial futura (ADR-10 naming AgroOps producto independiente).
 - **Disciplina pre-merge:** 0 errores TS, 0 ESLint errors, e2e críticos verdes, migraciones reversibles.
 - **Pre-deploy:** snapshot DB automático.
 - **Post-deploy:** healthcheck Telegram + registro SA99.
@@ -124,11 +124,18 @@ Cronograma SDD-08: **9 semanas v1.0** (Sprint 0 + 5 sprints).
 
 ## Identity Sprint
 
-**Bloquea UI productiva.** No hay logo, paleta ni tipografía AgroOps todavía. Hasta que se cierre el Identity Sprint:
+**v1 aplicada (Notion → Identity Tokens v1 — Para aplicar en código (Sprint 1)).** Tokens consumidos vía `src/app/globals.css`:
 
-- Sí se puede trabajar en backend, schema, integraciones, lógica de negocio.
-- Sí se puede prototipar UI funcional (sin pretender que es la final).
-- **No se puede declarar pantalla "lista" sin tokens Design System aplicados.**
+- **Paleta SaaS** — 9 slots (`--bg`, `--surface`, `--surface-elevated`, `--text`, `--text-muted`, `--border`, `--accent-action` = `--brand-primary` = `#1B4332`, `--accent-info` = `#2563EB`, `--accent-ok`, `--accent-warn`, `--accent-danger`).
+- **Marca AgroOps** — `--brand-primary` deep `#1B4332` (forest emergente), `--brand-accent` terra `#E07A3C` (solo logo/elementos de marca, nunca CTAs), papel `#F4F0E8`, pergamino `#E8DDC9`.
+- **Tipografía** — Fraunces variable (display, opsz 9-144 + wght 300-900) para `h1/h2/h3`, IBM Plex Sans (body 300-700), IBM Plex Mono (datos técnicos, lotes, coordenadas).
+- **Density:** cozy. **Shadows:** subtle. **No dark mode en v1.**
+- **Assets:** `/public/agroops-logo.svg` (wordmark 360×100) + `/public/favicon.svg` (monograma M sobre deep).
+
+**Reglas vigentes:**
+- Toda pantalla productiva debe consumir tokens (`var(--accent-action)`, `var(--text)`, etc.), no hex hardcoded.
+- `--brand-accent` (terra) solo en logo / acentos de marca. Las acciones (CTAs, links activos) usan `--accent-action` (deep).
+- Distinctiveness Audit aplica desde aquí: si una pantalla podría ser de Shadcn-stock → reescribir.
 
 ---
 

@@ -21,7 +21,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 - [ ] Confirmar subdominio producción: `agroops.agrom.es` — pendiente DNS Hostinger
 - [ ] CI inicial: lint + typecheck + test (29/29 verde) + build verde — typecheck y tests ya verdes en local, falta GitHub Actions
 - [ ] Pre-commit hooks (lint + typecheck) — pendiente
-- [ ] Identity Sprint **kickoff** (programar sesión) — pendiente
+- [x] Identity Sprint **v1 aplicada** (12 may 2026) — paleta deep #1B4332 / terra #E07A3C / papel #F4F0E8, Fraunces + IBM Plex Sans/Mono, logo wordmark + favicon M, dominio rectificado a `agroops.systemrapid.io`. HU-03 (declarar pantalla productiva) desbloqueada.
 - [ ] Provisionar servidor de producción + Caddy + DNS — pendiente
 
 ---
@@ -102,7 +102,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ## Sprint 5 — Hardening + primera operación real (1 semana)
 
-- [ ] Identity Sprint **cerrado** (tokens reales en `DESIGN.md`)
+- [x] Identity Sprint **cerrado** (tokens reales en `globals.css` + `CLAUDE.md` actualizado, v1 12 may 2026)
 - [ ] Distinctiveness Audit pasada en todas las pantallas productivas
 - [ ] E2E críticos verdes (crear misión, cerrar albarán, dispara factura)
 - [ ] Lighthouse > 90 en pantallas principales
