@@ -122,8 +122,8 @@ describe("parcels services (PostGIS)", () => {
     if (!first) throw new Error("Sin parcelas para update geometry test");
 
     const beforeArea = parseFloat(first.areaHectares);
-    const smallerPolygon = {
-      type: "Polygon" as const,
+    const smallerPolygon: import("./schemas").PolygonGeoJSON = {
+      type: "Polygon",
       coordinates: [
         [
           [-3.7, 40.4],

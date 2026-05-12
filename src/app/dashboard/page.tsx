@@ -66,11 +66,15 @@ export default async function DashboardPage() {
             <Link href="/dashboard/parcels">Parcelas SIGPAC</Link> — geometría
             PostGIS, área autocalculada.
           </li>
+          <li>
+            <Link href="/dashboard/missions">Misiones</Link> — state machine
+            8 estados, gates de transición, audit log.
+          </li>
         </ul>
       </section>
 
       <section className="dashboard__placeholder">
-        <h2>Pendiente Sprint 1</h2>
+        <h2>Pendiente</h2>
         <ul>
           <li>HU-03 Layout productivo (sidebar por épica) — bloqueado Identity Sprint.</li>
           <li>
