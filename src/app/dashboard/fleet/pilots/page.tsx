@@ -8,6 +8,7 @@
 import Link from "next/link";
 import { listPilots } from "@/features/fleet/pilots/services";
 import { PilotsTable } from "@/features/fleet/pilots/components/PilotsTable";
+import { EmptyState } from "@/features/shell/components/EmptyState";
 
 export const metadata = {
   title: "AgroOps — Pilotos",
@@ -19,12 +20,13 @@ export default async function PilotsListPage() {
   const pilots = await listPilots();
 
   return (
-    <main className="drones">
+    <main className="dashboard-listing">
       <header>
         <h1>Pilotos</h1>
         <p>
-          Pilotos de la flota AgroOps con cualificaciones AESA, ROPO, seguro
-          y reconocimiento médico.
+          Pilotos de la flota con cualificaciones AESA (licencia + clase),
+          ROPO (Registro Oficial de Productores y Operadores), seguro civil y
+          reconocimiento médico.
         </p>
         <p>
           <Link href="/dashboard/fleet/pilots/new" className="btn-primary">
@@ -34,8 +36,19 @@ export default async function PilotsListPage() {
           <Link href="/dashboard/fleet">Volver a flota</Link>
         </p>
       </header>
-
-      <PilotsTable pilots={pilots} />
+      {pilots.length === 0 ? (
+        <EmptyState
+          icon="👨‍✈️"
+          title="No hay pilotos registrados"
+          description="Para aprobar una misión necesitas al menos un piloto con cualificación ROPO activa. Cada piloto puede tener cuenta de usuario asociada o ser operador externo invitado."
+          action={{
+            href: "/dashboard/fleet/pilots/new",
+            label: "Añadir primer piloto",
+          }}
+        />
+      ) : (
+        <PilotsTable pilots={pilots} />
+      )}
     </main>
   );
 }

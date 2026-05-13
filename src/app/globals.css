@@ -2287,3 +2287,57 @@ main button:disabled {
 .empty-state__button:hover {
   filter: brightness(1.1);
 }
+
+/* =============================================================================
+ * Listings genéricos del dashboard (sustituye a la clase legacy .drones).
+ * Usados por: parcels, drones, pilots, phytosanitary listados.
+ * ========================================================================== */
+
+.dashboard-listing {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dashboard-listing > header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-listing > header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  color: var(--text-strong);
+  letter-spacing: -0.012em;
+}
+
+.dashboard-listing > header p {
+  margin: 0;
+  color: var(--text-muted);
+  max-width: 72ch;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.dashboard-listing__hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+}
+
+/* Cards de Fleet index: contador de elementos junto al título */
+.fleet-card__count {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}

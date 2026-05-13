@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { listDrones } from "@/features/fleet/services";
 import { DronesTable } from "@/features/fleet/components/DronesTable";
+import { EmptyState } from "@/features/shell/components/EmptyState";
 
 export const metadata = {
   title: "AgroOps — Drones",
@@ -22,11 +23,12 @@ export default async function DronesListPage() {
   const drones = await listDrones();
 
   return (
-    <main className="drones">
+    <main className="dashboard-listing">
       <header>
         <h1>Drones</h1>
         <p>
-          Flota AgroOps. Aeronaves UAS y activos de soporte (D-RTK 2, etc.).
+          Flota UAS y activos de soporte (D-RTK 2, etc.). Cada dron registra
+          MTOM, clase EASA, seguros, horas de vuelo y estado operativo.
         </p>
         <p>
           <Link href="/dashboard/fleet/drones/new" className="btn-primary">
@@ -36,8 +38,19 @@ export default async function DronesListPage() {
           <Link href="/dashboard/fleet">Volver a flota</Link>
         </p>
       </header>
-
-      <DronesTable drones={drones} />
+      {drones.length === 0 ? (
+        <EmptyState
+          icon="🚁"
+          title="No hay drones en la flota"
+          description="Da de alta tu primer dron aplicador (T50, T40), de inspección (Mavic 3E) o estación RTK (D-RTK 2). Sin drones no se pueden crear misiones aéreas."
+          action={{
+            href: "/dashboard/fleet/drones/new",
+            label: "Añadir primer dron",
+          }}
+        />
+      ) : (
+        <DronesTable drones={drones} />
+      )}
     </main>
   );
 }

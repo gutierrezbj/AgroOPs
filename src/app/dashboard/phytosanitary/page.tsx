@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { listPhytoProducts } from "@/features/phytosanitary/services";
 import { PhytoProductsTable } from "@/features/phytosanitary/components/PhytoProductsTable";
+import { EmptyState } from "@/features/shell/components/EmptyState";
 
 export const metadata = { title: "AgroOps — Catálogo fitosanitario" };
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function PhytoListPage() {
   const products = await listPhytoProducts();
   return (
-    <main className="drones">
+    <main className="dashboard-listing">
       <header>
         <h1>Catálogo fitosanitario</h1>
         <p>
@@ -27,7 +28,19 @@ export default async function PhytoListPage() {
           <Link href="/dashboard">Volver al dashboard</Link>
         </p>
       </header>
-      <PhytoProductsTable products={products} />
+      {products.length === 0 ? (
+        <EmptyState
+          icon="🧪"
+          title="Catálogo de fitosanitarios vacío"
+          description="Registra el producto + materia activa + lote + caducidad + dosis recomendada. ADR-4: el producto físico lo aporta el cliente final; AgroOps sólo registra el uso para PAC."
+          action={{
+            href: "/dashboard/phytosanitary/new",
+            label: "Añadir primer lote",
+          }}
+        />
+      ) : (
+        <PhytoProductsTable products={products} />
+      )}
     </main>
   );
 }
