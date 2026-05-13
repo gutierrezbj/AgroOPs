@@ -319,4 +319,16 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-13 · Playwright `webServer` auto-arranque + services GitHub Actions
+
+**Contexto:** Sprint 5 setup E2E. Decidir cómo arranca el dev server para los tests (local + CI) y cómo se provee PostGIS+Redis en CI.
+**Qué se descubrió:**
+- En local: si exiges al usuario tener `pnpm dev` corriendo antes de `pnpm e2e`, la fricción aumenta y el setup-2-pasos se vuelve fácil de olvidar. Mejor `webServer` config en `playwright.config.ts` que ejecuta `pnpm next dev` y espera al `url` para responder. `reuseExistingServer: !IS_CI` reusa el server local si ya está arriba (iteración rápida) y arranca uno limpio en CI.
+- En CI: GitHub Actions soporta `services:` con cualquier imagen Docker. Usar `postgis/postgis:16-3.4` directamente como service en vez de docker-compose evita un step extra. Health-check del service garantiza que Postgres esté ready antes del primer step. Las extensiones (`CREATE EXTENSION postgis...`) se aplican con `psql` en un step manual porque la imagen `postgis/postgis` activa la extensión en la DB `template_postgis`, no automáticamente en `agroops`.
+- Timeout: el primer build de Next.js 16 dev puede tardar 30+ segundos. `timeout: 120_000` en webServer config evita falsos negativos. Para E2E individuales `timeout: 30_000` + `expect.timeout: 7_000` cubre la mayoría de waits sin colgar.
+**Solución / patrón adoptado:** `playwright.config.ts` con webServer + reuseExistingServer condicional a `CI`. GitHub Action separa steps Install browsers → Apply extensions → Migrate → Seed → Typecheck+Vitest → Build → E2E → Upload artifact on failure. El artifact incluye `playwright-report/` + `test-results/` (screenshots, videos, traces) con retention de 14 días.
+**Referencia:** `playwright.config.ts`, `.github/workflows/e2e.yml`. Patrón aplicable a cualquier proyecto Next + Postgres+PostGIS. La imagen `postgis/postgis:16-3.4` está pinneada por reproducibilidad — bumpear conscientemente si Postgres mayor o PostGIS minor.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->

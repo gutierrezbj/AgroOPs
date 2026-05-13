@@ -164,6 +164,42 @@ Controlado por la env `AGROOPS_INVOICING_MODE`:
 
 ---
 
+## E2E Playwright (Sprint 5)
+
+**Suite E2E** en `/e2e/*.spec.ts` cubre los flows críticos:
+- `auth.spec.ts` — login admin + dashboard + logout + credenciales inválidas
+- `health.spec.ts` — `/api/health` público con DB+Redis ok
+- `field-notebook.spec.ts` — cuaderno PAC + export PDF con filtros
+- `dashboard-shell.spec.ts` — smoke de las 11 pantallas principales
+
+**Setup local (1ª vez):**
+```bash
+pnpm e2e:install              # descarga Chromium (~150MB)
+make dev                      # arranca Postgres + Redis docker
+pnpm db-migrate && pnpm db-seed   # schema + seed AgroM
+pnpm e2e                      # corre toda la suite (Playwright levanta Next.js solo)
+```
+
+**Iteración:** `pnpm e2e:ui` abre el UI mode de Playwright para depurar.
+
+**CI:** `.github/workflows/e2e.yml` arranca Postgres+Redis services, aplica migraciones, seed, build y corre los tests. Sube `playwright-report/` + screenshots/videos como artifact si algún test falla.
+
+---
+
+## Lighthouse audit (Sprint 5)
+
+`scripts/lighthouse-audit.sh` ejecuta Lighthouse sobre las pantallas públicas (`/login` en v1.0) y guarda reportes HTML+JSON timestamped en `storage/lighthouse/<timestamp>/`. Umbral performance configurable vía `LH_THRESHOLD_PERF` (default 90).
+
+```bash
+pnpm dev                     # arrancar server
+pnpm lighthouse:audit        # auditar baseline
+open storage/lighthouse/<timestamp>/summary.md
+```
+
+En v1.1: extender para auditar pantallas autenticadas con puppeteer login script previo.
+
+---
+
 ## Observabilidad (HU-25)
 
 - `GET /api/health` — endpoint público sin auth. Retorna `{ status, version, uptime, checks }`. HTTP 503 si DB o Redis caídos, 200 en cualquier otro caso (status puede ser `degraded` cuando integraciones opcionales no configuradas).

@@ -1,0 +1,124 @@
+# AgroOps — E2E Playwright en CI (Sprint 5)
+#
+# Levanta Postgres+PostGIS + Redis como services GitHub Actions, aplica
+# migraciones Drizzle, carga el seed AgroM, arranca Next.js y ejecuta los
+# tests Playwright. Sube los reportes HTML/screenshots/videos como
+# artifact si los tests fallan.
+#
+# Para activar este workflow en producción:
+# 1. Configurar secret AUTH_SECRET (base64 32 bytes) en repo settings.
+# 2. Configurar SEED_ADMIN_PASSWORD, SEED_PILOT_PASSWORD,
+#    SEED_OPERARIO_PASSWORD si quieres credenciales distintas a las dev.
+# 3. (Opcional) HOLDED_API_KEY, AEMET_API_KEY para que los checks de health
+#    devuelvan 'ok' en vez de 'degraded'.
+
+name: E2E Playwright
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: agroops
+          POSTGRES_PASSWORD: agroops_dev
+          POSTGRES_DB: agroops
+        ports:
+          - 6170:5432
+        options: >-
+          --health-cmd "pg_isready -U agroops -d agroops"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7
+        ports:
+          - 6171:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://agroops:agroops_dev@127.0.0.1:6170/agroops
+      REDIS_URL: redis://127.0.0.1:6171
+      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      AUTH_URL: http://localhost:3000
+      NODE_ENV: test
+      AGROOPS_INVOICING_MODE: manual
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || 'agroops-dev-2026' }}
+      SEED_PILOT_PASSWORD: ${{ secrets.SEED_PILOT_PASSWORD || 'agroops-dev-2026' }}
+      SEED_OPERARIO_PASSWORD: ${{ secrets.SEED_OPERARIO_PASSWORD || 'agroops-dev-2026' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Aplicar extensiones PostGIS
+        env:
+          PGPASSWORD: agroops_dev
+        run: |
+          psql -h 127.0.0.1 -p 6170 -U agroops -d agroops -c "
+            CREATE EXTENSION IF NOT EXISTS postgis;
+            CREATE EXTENSION IF NOT EXISTS postgis_topology;
+            CREATE EXTENSION IF NOT EXISTS pg_trgm;
+            CREATE EXTENSION IF NOT EXISTS unaccent;
+          "
+
+      - name: Aplicar migraciones Drizzle
+        run: pnpm drizzle-kit migrate
+
+      - name: Seed AgroM
+        run: pnpm tsx src/db/seed/index.ts
+
+      - name: Typecheck + Vitest
+        run: |
+          pnpm typecheck
+          pnpm test
+
+      - name: Build Next.js
+        run: pnpm build
+
+      - name: Ejecutar Playwright E2E
+        run: pnpm e2e
+        env:
+          CI: "true"
+
+      - name: Subir reporte Playwright (si falla)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

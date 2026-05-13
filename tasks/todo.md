@@ -108,15 +108,15 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ---
 
-## Sprint 5 — Hardening + primera operación real (1 semana)
+## Sprint 5 — Hardening + primera operación real (1 semana) 🟡 EN CURSO
 
 - [x] Identity Sprint **cerrado** (tokens reales en `globals.css` + `CLAUDE.md` actualizado, v1 12 may 2026)
-- [ ] Distinctiveness Audit pasada en todas las pantallas productivas
-- [ ] E2E críticos verdes (crear misión, cerrar albarán, dispara factura)
-- [ ] Lighthouse > 90 en pantallas principales
-- [ ] Pruebas de carga simuladas (50 misiones simultáneas)
-- [ ] **Primera operación real ejecutada por John con AgroOps de principio a fin**
-- [ ] Validar KPI cierre v1.0: tiempo administrativo post-vuelo < 15 minutos
+- [ ] Distinctiveness Audit pasada en todas las pantallas productivas — siguiente sesión
+- [~] E2E críticos Playwright — **Fase A 13 may 2026** ✅: `playwright.config.ts` con webServer auto, 4 suites (auth + health + field-notebook + dashboard-shell smoke de 11 pantallas), GitHub Action `.github/workflows/e2e.yml` con services PostGIS+Redis, scripts `pnpm e2e` / `pnpm e2e:ui` / `pnpm e2e:install`. Falta Fase B con flow completo crear→completar misión + firma albarán (requiere fixtures de DB).
+- [~] Lighthouse > 90 en pantallas principales — **Fase A 13 may 2026** ✅: `scripts/lighthouse-audit.sh` con umbral configurable, audita `/login` público en v1, reportes HTML+JSON timestamped en `storage/lighthouse/`. Falta Fase B con login script para auditar pantallas autenticadas + integración en CI.
+- [ ] Pruebas de carga simuladas (50 misiones simultáneas) — siguiente sesión
+- [ ] **Primera operación real ejecutada por John con AgroOps de principio a fin** — validación humana offline
+- [ ] Validar KPI cierre v1.0: tiempo administrativo post-vuelo < 15 minutos — medición durante operación real
 
 ---
 
