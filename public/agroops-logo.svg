@@ -1,13 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" role="img" aria-label="AgroOps">
   <!-- v0.2 ecosistema FitoLink → AgroM → AgroOps (decisión JuanCho 13-may-2026).
-       brand-900 #18230f para el wordmark · terra-500 #d45220 para el punto.
-       Tipografía: Instrument Serif. 'Ops' en cursiva para diferenciar
-       sin recurrir a pesos variables (Instrument Serif no es variable). -->
+       Patrón inspirado en FitoLink LandingPage: contraste por COLOR en la
+       palabra clave (no por italic, que requeriría cargar otra variante
+       del font que Google Fonts no precarga en SVGs).
+
+       'Agro' → brand-900 #18230f (ink)
+       'Ops'  → brand-600 #46632e (deep olive — palabra distintiva del producto)
+       dot   → terra-500 #d45220 (acento de marca sobre la primera 'O' de Ops)
+       Tipografía: Instrument Serif regular 400 (única variante cargada). -->
   <circle cx="187" cy="14" r="6.5" fill="#d45220"/>
   <text x="0" y="76"
         font-family="Instrument Serif, Georgia, serif"
         font-size="82"
         font-weight="400"
-        fill="#18230f"
-        style="letter-spacing:-0.025em;">Agro<tspan font-style="italic">Ops</tspan></text>
+        style="letter-spacing:-0.025em;">
+    <tspan fill="#18230f">Agro</tspan><tspan fill="#46632e">Ops</tspan>
+  </text>
 </svg>
