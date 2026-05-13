@@ -1,99 +1,168 @@
 /**
- * AgroOps — /dashboard (placeholder Sprint 1)
+ * AgroOps — /dashboard (Sprint 5 Distinctiveness Audit)
  *
- * Vista mínima para validar que la sesión llega al servidor con su rol.
- * El layout productivo llega en HU-03 (bloqueado por Identity Sprint para
- * declarar pantalla "lista").
+ * Pantalla de inicio del dashboard. La sesión + logout ya están en el
+ * `DashboardHeader` del layout, así que aquí mostramos un hero AgroOps
+ * con la operación del día y los accesos rápidos a las épicas v1.
+ *
+ * El listado de accesos se agrupa por dominio (Operación / Recursos /
+ * Cumplimiento / Diagnóstico) para que el operador no tenga que escanear
+ * una lista plana. Las tarjetas son `<a>` con `<article>` semántico.
  */
 import Link from "next/link";
 import { auth } from "@/auth";
-import { logoutAction } from "@/features/auth/actions/logout";
+import { ROLES, hasRole } from "@/lib/rbac";
+import { getInvoicingMode } from "@/lib/constants";
 
 export const metadata = {
   title: "AgroOps — Dashboard",
 };
 
+interface ShortcutCard {
+  href: string;
+  title: string;
+  description: string;
+  /** Sólo se muestra si el rol está incluido (default: todos). */
+  roles?: ReadonlyArray<"admin" | "piloto" | "operario" | "viewer">;
+}
+
+const OPERACION: ShortcutCard[] = [
+  {
+    href: "/dashboard/missions",
+    title: "Misiones",
+    description:
+      "State machine 8 estados con gates duros, capturas meteo automáticas y albarán firmado en finca.",
+  },
+  {
+    href: "/dashboard/map",
+    title: "Mapa operativo",
+    description:
+      "Parcelas SIGPAC + NOTAMs ENAIRE sobre MapLibre. Dibujo interactivo de polígonos.",
+  },
+  {
+    href: "/dashboard/field-notebook",
+    title: "Cuaderno de campo",
+    description:
+      "Registro PAC con export PDF tabular agrupado por aplicación-parcela-producto.",
+  },
+];
+
+const RECURSOS: ShortcutCard[] = [
+  {
+    href: "/dashboard/clients",
+    title: "Clientes",
+    description:
+      "Cooperativas, ATRIA, agricultores y comunidades de regantes. Sincronización opt-in con Holded.",
+  },
+  {
+    href: "/dashboard/parcels",
+    title: "Parcelas SIGPAC",
+    description:
+      "Geometría PostGIS Polygon SRID 4326. Área autocalculada con ST_Area::geography.",
+  },
+  {
+    href: "/dashboard/fleet",
+    title: "Flota",
+    description:
+      "Drones aplicadores (T50), inspección (Mavic 3E), referencia (D-RTK 2) y pilotos con licencia AESA + ROPO.",
+  },
+  {
+    href: "/dashboard/phytosanitary",
+    title: "Catálogo fitosanitario",
+    description:
+      "Producto + materia activa + lote + caducidad + dosis. ADR-4: el producto lo aporta el cliente final.",
+  },
+];
+
+const CUMPLIMIENTO: ShortcutCard[] = [
+  {
+    href: "/dashboard/audit-log",
+    title: "Audit log",
+    description:
+      "Trazabilidad append-only de mutaciones críticas. JSON before/after por entrada.",
+    roles: ["admin"],
+  },
+];
+
 export default async function DashboardPage() {
   const session = await auth();
+  const role = session?.user?.role;
+  const userDisplayName =
+    session?.user?.name?.trim() || session?.user?.email || "operador";
+  const isAdmin = hasRole(session, ROLES.ADMIN_ONLY);
+  const invoicingMode = getInvoicingMode();
 
   return (
-    <main className="dashboard">
-      <header>
+    <div className="dashboard-home">
+      <header className="dashboard-home__hero">
         <h1>AgroOps · Dashboard</h1>
+        <p className="dashboard-home__greeting">
+          Buenas, <strong>{userDisplayName}</strong>. Operación bajo paraguas
+          Drovinci NPTA. Facturación{" "}
+          <code>{invoicingMode}</code> activa (
+          {invoicingMode === "manual"
+            ? "v1.0 por defecto"
+            : "Holded autodispara al facturar"}
+          ).
+        </p>
       </header>
 
-      {session?.user ? (
-        <section className="dashboard__session">
-          <h2>Sesión activa</h2>
-          <dl>
-            <dt>Usuario</dt>
-            <dd>{session.user.name ?? session.user.email}</dd>
-            <dt>Email</dt>
-            <dd>{session.user.email}</dd>
-            <dt>Rol</dt>
-            <dd>
-              <code>{session.user.role}</code>
-            </dd>
-            <dt>User ID</dt>
-            <dd>
-              <code>{session.user.id}</code>
-            </dd>
-          </dl>
-
-          <form action={logoutAction}>
-            <button type="submit">Cerrar sesión</button>
-          </form>
-        </section>
-      ) : (
-        <p>Sin sesión activa.</p>
+      <Section title="Operación" cards={OPERACION} userRole={role} />
+      <Section title="Recursos" cards={RECURSOS} userRole={role} />
+      {isAdmin && (
+        <Section
+          title="Cumplimiento"
+          cards={CUMPLIMIENTO}
+          userRole={role}
+        />
       )}
 
-      <section>
-        <h2>Atajos</h2>
-        <ul>
-          <li>
-            <Link href="/dashboard/fleet">Flota</Link> — drones + pilotos.
-          </li>
-          <li>
-            <Link href="/dashboard/clients">Clientes</Link> — cooperativas,
-            ATRIA, agricultores.
-          </li>
-          <li>
-            <Link href="/dashboard/phytosanitary">Catálogo fitosanitario</Link>
-            {" "}— lotes de productos fitosanitarios.
-          </li>
-          <li>
-            <Link href="/dashboard/parcels">Parcelas SIGPAC</Link> — geometría
-            PostGIS, área autocalculada.
-          </li>
-          <li>
-            <Link href="/dashboard/missions">Misiones</Link> — state machine
-            8 estados, gates de transición, audit log.
-          </li>
-          <li>
-            <Link href="/dashboard/map">Mapa operativo</Link> — parcelas
-            SIGPAC + NOTAMs ENAIRE en MapLibre con dibujo interactivo.
-          </li>
-          <li>
-            <Link href="/dashboard/field-notebook">Cuaderno de campo</Link>
-            {" "}— registro PAC con export PDF tabular (HU-21 + HU-22).
-          </li>
-          {session?.user.role === "admin" && (
-            <li>
-              <Link href="/dashboard/audit-log">Audit log</Link> — trazabilidad
-              append-only de mutaciones críticas (HU-23, solo admin).
-            </li>
-          )}
-        </ul>
-      </section>
+      <footer className="dashboard-home__pending">
+        <small>
+          <strong>Sprint 5 en curso:</strong> Distinctiveness Audit · E2E
+          Playwright · primera operación real end-to-end. Si detectas algo que
+          chirría visualmente o no se siente AgroOps, anótalo y lo afinamos.
+        </small>
+      </footer>
+    </div>
+  );
+}
 
-      <section className="dashboard__placeholder">
-        <h2>Pendiente</h2>
-        <ul>
-          <li>HU-03 Layout productivo (sidebar por épica) — Identity Sprint v1 aplicada, falta sidebar productivo.</li>
-          <li>Sprint 5 — primera operación real end-to-end por John con AgroOps.</li>
-        </ul>
-      </section>
-    </main>
+interface SectionProps {
+  title: string;
+  cards: ShortcutCard[];
+  userRole: string | undefined;
+}
+
+function Section({ title, cards, userRole }: SectionProps) {
+  const visible = cards.filter((c) => {
+    if (!c.roles) return true;
+    if (!userRole) return false;
+    return (c.roles as ReadonlyArray<string>).includes(userRole);
+  });
+  if (visible.length === 0) return null;
+  return (
+    <section className="dashboard-home__section" aria-labelledby={`section-${title}`}>
+      <h2 id={`section-${title}`} className="dashboard-home__section-title">
+        {title}
+      </h2>
+      <div className="dashboard-home__cards">
+        {visible.map((card) => (
+          <Link
+            href={card.href}
+            key={card.href}
+            className="dashboard-home__card"
+          >
+            <article>
+              <h3>{card.title}</h3>
+              <p>{card.description}</p>
+              <span className="dashboard-home__card-cta" aria-hidden="true">
+                Abrir →
+              </span>
+            </article>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

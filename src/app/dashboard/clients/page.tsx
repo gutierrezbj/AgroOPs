@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { listClients } from "@/features/clients/services";
 import { ClientsTable } from "@/features/clients/components/ClientsTable";
+import { EmptyState } from "@/features/shell/components/EmptyState";
 
 export const metadata = { title: "AgroOps — Clientes" };
 export const dynamic = "force-dynamic";
@@ -26,7 +27,19 @@ export default async function ClientsListPage() {
           <Link href="/dashboard">Volver al dashboard</Link>
         </p>
       </header>
-      <ClientsTable clients={clients} />
+      {clients.length === 0 ? (
+        <EmptyState
+          icon="👥"
+          title="No hay clientes en el directorio"
+          description="Los clientes son cooperativas, ATRIA, agricultores individuales o comunidades de regantes a los que prestáis servicio. Cada cliente tiene parcelas asociadas que se aplicarán en las misiones."
+          action={{
+            href: "/dashboard/clients/new",
+            label: "Crear primer cliente",
+          }}
+        />
+      ) : (
+        <ClientsTable clients={clients} />
+      )}
     </main>
   );
 }

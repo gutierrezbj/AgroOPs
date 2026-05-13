@@ -331,4 +331,14 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-13 · Shell global con layout.tsx anidado: la pieza que faltaba para AgroOps-feeling
+
+**Contexto:** John es usuario final, no developer. Las pantallas del dashboard se sentían stock-Shadcn porque cada `page.tsx` repetía su `<header>` aislado: sin nav primaria, sin logo, sin marca consistente entre vistas. El Identity Sprint v1 (paleta + tipografía) estaba aplicado en CSS pero faltaba el **shell**.
+**Qué se descubrió:** Next.js App Router permite `layout.tsx` en cualquier nivel de la jerarquía de rutas. Un solo `src/app/dashboard/layout.tsx` server-component basta para envolver las 11 pantallas dashboard sin tocar las page.tsx individuales. La sesión se carga una vez vía `await auth()` y se propaga al `DashboardHeader` (que internamente pasa el rol al `DashboardNav` para filtrar el link de audit-log a admin-only). El `<h1>` de cada page sigue siendo content-area, no compite con el logo del header.
+**Solución / patrón adoptado:** `src/features/shell/components/{DashboardHeader,DashboardNav,UserChip,DashboardFooter,EmptyState}.tsx` + `src/app/dashboard/layout.tsx` (16 líneas). Active state en nav usa `usePathname()` con match prefix configurable por item. La excepción documentada al "terra sólo marca": el active state usa `border-bottom: 2px solid var(--brand-accent)` como literal acción de marca sobre el lienzo del producto ("estás aquí"). El UserChip con rol-pill colorizado (admin=deep, piloto=info, operario=ok, viewer=muted) cumple regla anti-stock: en 1 vistazo se distingue admin de operario sin leer texto.
+**Lección general:** un producto SaaS se siente "tuyo" en cuanto tiene shell consistente con nav primaria persistente. Si cada pantalla es una isla, falla la auditoría distinctiveness independientemente de cuánto polish tengan los componentes individuales.
+**Referencia:** `src/app/dashboard/layout.tsx`, `src/features/shell/components/*`. Checklist Distinctiveness Audit documentado en CLAUDE.md sección "Distinctiveness Audit checklist (Sprint 5)" — 5 bloques objetivos (Shell, Marca, Densidad, Estados, Voz) para auditar futuras pantallas.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->

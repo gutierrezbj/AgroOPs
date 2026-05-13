@@ -211,6 +211,65 @@ En v1.1: extender para auditar pantallas autenticadas con puppeteer login script
 
 ---
 
+## Distinctiveness Audit checklist (Sprint 5)
+
+Antes de declarar una pantalla productiva como "lista", revisar contra
+este checklist. Cualquier "no" obliga a refactor antes de liberar.
+
+**Shell + navegación**
+- [ ] Está dentro del layout `/dashboard/layout.tsx` (header sticky con logo
+      AgroOps + nav primaria + user chip + footer SRS).
+- [ ] El link de la nav primaria correspondiente aparece con estado activo
+      (`dashboard-nav__link--active` con border-bottom terra).
+- [ ] El usuario ve su nombre/email + rol-pill + botón de logout sin
+      tener que bajar a la página.
+
+**Marca**
+- [ ] Headings (h1/h2/h3) en `var(--font-display)` Fraunces.
+- [ ] Body en `var(--font-body)` IBM Plex Sans.
+- [ ] Datos técnicos (códigos `AGM-YYYY-XXXX`, lotes, coordenadas, SHA-256)
+      en `var(--font-mono, ui-monospace)` IBM Plex Mono.
+- [ ] CTAs usan `var(--accent-action)` (deep `#1B4332`).
+- [ ] `var(--brand-accent)` (terra `#E07A3C`) **sólo** en logo, dot del
+      wordmark, active state de nav, polígono en construcción del mapa.
+      Nunca en CTAs operativos.
+
+**Densidad y respiración**
+- [ ] Padding mínimo 1.25rem en contenedores principales (cozy density).
+- [ ] Botones primarios: `padding: 0.4-0.5rem 0.9-1rem`, `border-radius:
+      var(--radius-base)` (4px), font-size ≥ 0.875rem.
+- [ ] Cards / paneles: `border-radius: var(--radius-lg)` (6px),
+      `box-shadow: var(--shadow-subtle)`, fondo `var(--surface-elevated)`.
+
+**Estados**
+- [ ] **Empty state**: componente `EmptyState` con copy específico del
+      producto (no "No data"). Acción primaria con next-step obvio.
+- [ ] **Loading**: el server component carga datos antes de renderizar;
+      los formularios usan `useActionState` con `pending` legible
+      ("Creando…", "Guardando…").
+- [ ] **Error**: `role="alert"` con texto en español + hint accionable
+      (no "Error 500", sino "Holded rate limit, reintenta en 5 min").
+- [ ] **Status badges**: pill con `color-mix(var(--accent-X) 18%, transparent)`
+      + texto `var(--accent-X)`. ok/info/warn/danger consistentes.
+
+**Voz y microcopy**
+- [ ] Botones en imperativo corto: "Crear misión", "Firmar albarán",
+      "Sincronizar". No "Submit" ni "Click here".
+- [ ] Tooltips y descripciones explican el porqué del campo, no sólo el
+      qué (p.ej. "NPTA Drovinci — operación bajo paraguas hasta SORA propia").
+- [ ] Mensajes de error citan la acción concreta para arreglar
+      ("Define HOLDED_API_KEY en .env.local y reinicia el servidor"),
+      no genéricos.
+
+**Distinctiveness**
+- [ ] Si una captura de la pantalla podría confundirse con cualquier
+      app Shadcn-stock, hay que refactor. Pista: si no se ve el logo o
+      la paleta deep/terra en ningún sitio, falla.
+- [ ] El primer click útil debería estar a ≤ 1 segundo desde que se
+      carga la pantalla. Si hay que scrolear o cazar el CTA, falla.
+
+---
+
 ## Identity Sprint
 
 **v1 aplicada (Notion → Identity Tokens v1 — Para aplicar en código (Sprint 1)).** Tokens consumidos vía `src/app/globals.css`:
