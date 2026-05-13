@@ -824,7 +824,7 @@ body:has(.login-page) {
 .map-popup__title {
   display: block;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 400;
   font-size: 1rem;
   margin: 0 0 0.4rem;
   color: var(--text-strong);
@@ -871,7 +871,7 @@ body:has(.login-page) {
   margin: 0 0 0.6rem;
   font-family: var(--font-display);
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--text-strong);
   letter-spacing: 0.01em;
 }
@@ -1130,7 +1130,7 @@ body:has(.login-page) {
 .holded-sync__header h2 {
   margin: 0 0 0.25rem;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 400;
   font-size: 1.1rem;
   color: var(--text-strong);
 }
@@ -1254,7 +1254,7 @@ body:has(.login-page) {
 .invoice-panel__header h2 {
   margin: 0 0 0.25rem;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 400;
   font-size: 1.05rem;
   color: var(--text-strong);
 }
@@ -1599,7 +1599,7 @@ body:has(.login-page) {
 .field-notebook__table thead th {
   color: var(--surface-elevated);
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   text-align: left;
   padding: 0.6rem 0.55rem;
   font-size: 0.78rem;
@@ -1792,7 +1792,7 @@ body:has(.login-page) {
 .audit-log__table thead th {
   color: var(--surface-elevated);
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   text-align: left;
   padding: 0.55rem 0.6rem;
   font-size: 0.78rem;
@@ -2161,7 +2161,7 @@ body:has(.login-page) {
 .dashboard-home__hero h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(1.6rem, 2.5vw, 2rem);
   color: var(--text-strong);
   letter-spacing: -0.015em;
@@ -2177,7 +2177,7 @@ body:has(.login-page) {
 .dashboard-home__section-title {
   margin: 0 0 0.85rem;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 1.05rem;
   color: var(--text-strong);
   letter-spacing: -0.005em;
@@ -2219,7 +2219,7 @@ body:has(.login-page) {
 .dashboard-home__card h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 1rem;
   color: var(--text-strong);
 }
@@ -2279,7 +2279,7 @@ body:has(.login-page) {
 .empty-state__title {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 1.1rem;
   color: var(--text-strong);
 }
@@ -2339,7 +2339,7 @@ body:has(.login-page) {
 .dashboard-listing > header h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(1.5rem, 2.2vw, 1.9rem);
   color: var(--text-strong);
   letter-spacing: -0.012em;
