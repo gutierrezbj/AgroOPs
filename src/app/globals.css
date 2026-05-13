@@ -416,13 +416,10 @@ main button:disabled {
  * Login
  * ========================================================================== */
 
-/* /login es componente EDITORIAL — usa la paleta paper/parch/rule del
- * ecosistema (igual que login/terms/pricing en FitoLink). El producto
- * productivo (/dashboard/*) sigue con surface neutro blanco. */
-body:has(.login-page) {
-  background: var(--editorial-paper);
-}
-
+/* /login usa el mismo --surface neutro que el dashboard productivo
+ * para coherencia visual con el resto del producto. Los tokens
+ * --editorial-* quedan reservados para futuros componentes legales
+ * (terms, pricing public, emails) si fueran necesarios. */
 .login-page {
   display: flex;
   flex-direction: column;
