@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "agroops-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["next", "dev"],
+      "port": 3000
+    }
+  ]
+}
