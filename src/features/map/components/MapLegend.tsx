@@ -44,7 +44,7 @@ export function MapLegend({
             />
             <span
               className="map-legend__swatch"
-              style={{ background: "#1B4332" }}
+              style={{ background: "#46632e" }}
               aria-hidden="true"
             />
             <span className="map-legend__label">
@@ -61,7 +61,7 @@ export function MapLegend({
             />
             <span
               className="map-legend__swatch map-legend__swatch--dashed"
-              style={{ background: "#C0382B" }}
+              style={{ background: "#b91c1c" }}
               aria-hidden="true"
             />
             <span className="map-legend__label">

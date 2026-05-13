@@ -34,13 +34,14 @@ const MARGIN_BOTTOM = 32;
 const HEADER_HEIGHT = 60;
 const FOOTER_HEIGHT = 24;
 
-// Identity Sprint v1 — Deep & Paper para legibilidad imprenta
-const COLOR_TEXT = rgb(0.06, 0.16, 0.13); // #0F2A22
-const COLOR_MUTED = rgb(0.36, 0.36, 0.36);
-const COLOR_LINE = rgb(0.78, 0.78, 0.78);
-const COLOR_HEADER_BG = rgb(0.106, 0.263, 0.196); // #1B4332 deep
-const COLOR_HEADER_TEXT = rgb(0.957, 0.941, 0.91); // #F4F0E8 paper
-const COLOR_ZEBRA = rgb(0.965, 0.953, 0.918); // #F6F3EA (más suave que paper)
+// Identity v0.2 — FitoLink → AgroM → AgroOps (decisión JuanCho 13-may-2026).
+// pdf-lib usa rgb(r/255, g/255, b/255) en floats 0-1.
+const COLOR_TEXT = rgb(24 / 255, 35 / 255, 15 / 255); // #18230f ink (brand-900)
+const COLOR_MUTED = rgb(107 / 255, 114 / 255, 128 / 255); // #6b7280 muted (gray-500)
+const COLOR_LINE = rgb(212 / 255, 168 / 255, 90 / 255); // #d4a85a rule (earth-300) ~50% alpha sería ideal, sin alpha damos hairline visible
+const COLOR_HEADER_BG = rgb(70 / 255, 99 / 255, 46 / 255); // #46632e deep (brand-600)
+const COLOR_HEADER_TEXT = rgb(253 / 255, 248 / 255, 240 / 255); // #fdf8f0 paper (earth-50)
+const COLOR_ZEBRA = rgb(245 / 255, 230 / 255, 204 / 255); // #f5e6cc parch (earth-100)
 
 interface Column {
   key: keyof FieldNotebookEntry | "compositeSigpac" | "compositeProduct" | "compositeOperator" | "compositeEquipment";

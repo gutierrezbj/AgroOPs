@@ -8,8 +8,8 @@
  * (`/api/notams/geojson`) on mount. Renderiza dos capas overlay con paleta
  * Identity Sprint:
  *
- * - Parcelas: fill deep `#1B4332` con opacity 0.25 + stroke deep 2px.
- * - NOTAMs:   fill danger `#C0382B` con opacity 0.25 + stroke danger dashed.
+ * - Parcelas: fill deep `#46632e` con opacity 0.25 + stroke deep 2px.
+ * - NOTAMs:   fill danger `#b91c1c` con opacity 0.20 + stroke danger dashed.
  *
  * Click en cualquier feature → popup con properties resumidas. Doble click
  * sobre el mapa reservado para HU-14 Fase B (dibujo interactivo).
@@ -49,7 +49,7 @@ const PARCELS_FILL_LAYER: Omit<FillLayerSpecification, "source"> = {
   id: "parcels-fill",
   type: "fill",
   paint: {
-    "fill-color": "#1B4332", // --brand-primary
+    "fill-color": "#46632e", // --accent-action (brand-600)
     "fill-opacity": 0.25,
   },
 };
@@ -58,7 +58,7 @@ const PARCELS_STROKE_LAYER: Omit<LineLayerSpecification, "source"> = {
   id: "parcels-stroke",
   type: "line",
   paint: {
-    "line-color": "#1B4332",
+    "line-color": "#46632e",
     "line-width": 2,
   },
 };
@@ -67,7 +67,7 @@ const NOTAMS_FILL_LAYER: Omit<FillLayerSpecification, "source"> = {
   id: "notams-fill",
   type: "fill",
   paint: {
-    "fill-color": "#C0382B", // --accent-danger
+    "fill-color": "#b91c1c", // --accent-danger (red-700)
     "fill-opacity": 0.2,
   },
 };
@@ -76,7 +76,7 @@ const NOTAMS_STROKE_LAYER: Omit<LineLayerSpecification, "source"> = {
   id: "notams-stroke",
   type: "line",
   paint: {
-    "line-color": "#C0382B",
+    "line-color": "#b91c1c",
     "line-width": 2,
     "line-dasharray": [3, 2],
   },

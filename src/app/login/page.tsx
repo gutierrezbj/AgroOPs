@@ -1,9 +1,10 @@
 /**
  * AgroOps — /login
  *
- * Identity Sprint v1 aplicado: logo wordmark SVG (Fraunces 500/900 con punto terra
- * sobre la primera 'O' de Ops), tagline corporativo, footer con paraguas Drovinci.
- * Tokens de paleta / tipografía consumidos vía `src/app/globals.css`.
+ * Identity v0.2 (FitoLink → AgroM → AgroOps): logo wordmark SVG en
+ * Instrument Serif con 'Ops' italic + punto terra-500 sobre la primera
+ * 'O', tagline corporativo, footer con paraguas Drovinci. Tokens de
+ * paleta y tipografía consumidos vía `src/app/globals.css`.
  */
 import Image from "next/image";
 import { Suspense } from "react";

@@ -331,7 +331,7 @@ interface DemoMission {
 
 const DEMO_MISSIONS: DemoMission[] = [
   {
-    code: "AGM-2026-D001",
+    code: "AGM-2026-8001",
     status: "draft",
     clientTaxId: "F-22222222",
     parcelRefs: ["14-019-0-0-21-101-1"],
@@ -342,7 +342,7 @@ const DEMO_MISSIONS: DemoMission[] = [
     notes: "Borrador — pendiente confirmar fecha con técnico cooperativa.",
   },
   {
-    code: "AGM-2026-D002",
+    code: "AGM-2026-8002",
     status: "planned",
     clientTaxId: "G-33333333",
     parcelRefs: ["23-050-0-0-12-205-1"],
@@ -353,7 +353,7 @@ const DEMO_MISSIONS: DemoMission[] = [
     notes: "Planificada — tratamiento preventivo repilo Hojiblanca.",
   },
   {
-    code: "AGM-2026-D003",
+    code: "AGM-2026-8003",
     status: "approved",
     clientTaxId: "G-55555555",
     parcelRefs: ["18-126-0-0-04-088-1"],
@@ -364,7 +364,7 @@ const DEMO_MISSIONS: DemoMission[] = [
     notes: "Aprobada por dirección. Pendiente entrar en preflight.",
   },
   {
-    code: "AGM-2026-D004",
+    code: "AGM-2026-8004",
     status: "completed",
     clientTaxId: "44444444R",
     parcelRefs: ["02-079-0-0-08-345-1"],
@@ -378,7 +378,7 @@ const DEMO_MISSIONS: DemoMission[] = [
       "Aplicación completada — herbicida pre-emergencia en almendro. Pendiente facturar (modo manual).",
   },
   {
-    code: "AGM-2026-D005",
+    code: "AGM-2026-8005",
     status: "invoiced",
     clientTaxId: "F-22222222",
     parcelRefs: ["14-019-0-0-21-101-1"],

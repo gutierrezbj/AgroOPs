@@ -1,11 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 100" role="img" aria-label="AgroOps">
-  <!-- punto terra encima de la primera 'O' de Ops -->
-  <circle cx="187" cy="14" r="6.5" fill="#E07A3C"/>
-  <!-- wordmark: 'Agro' peso 500, 'Ops' peso 900 -->
+  <!-- v0.2 ecosistema FitoLink → AgroM → AgroOps (decisión JuanCho 13-may-2026).
+       brand-900 #18230f para el wordmark · terra-500 #d45220 para el punto.
+       Tipografía: Instrument Serif. 'Ops' en cursiva para diferenciar
+       sin recurrir a pesos variables (Instrument Serif no es variable). -->
+  <circle cx="187" cy="14" r="6.5" fill="#d45220"/>
   <text x="0" y="76"
-        font-family="Fraunces, Georgia, serif"
-        font-size="78"
-        font-weight="500"
-        fill="#0F2A22"
-        style="font-variation-settings:'opsz' 144,'SOFT' 0,'WONK' 0; letter-spacing:-0.025em;">Agro<tspan font-weight="900">Ops</tspan></text>
+        font-family="Instrument Serif, Georgia, serif"
+        font-size="82"
+        font-weight="400"
+        fill="#18230f"
+        style="letter-spacing:-0.025em;">Agro<tspan font-style="italic">Ops</tspan></text>
 </svg>

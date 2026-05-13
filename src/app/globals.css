@@ -1,40 +1,46 @@
 @import "tailwindcss";
 
 /* =============================================================================
- * AgroOps — Identity Tokens v1 (Sprint 1, light-only)
+ * AgroOps — Identity Tokens v0.2 (Sprint 5 · 13-may-2026)
  *
- * Materialización de las decisiones del Identity Sprint AgroOps. Fuente:
- * Notion → "Identity Tokens v1 — Para aplicar en código (Sprint 1)".
+ * Cadena de herencia oficial:  FitoLink → AgroM → AgroOps.
+ * FitoLink es la base del ecosistema visual (decisión JuanCho 13-may-2026).
+ * Esta paleta espeja `apps/web/tailwind.config.js` del repo gutierrezbj/fitolink
+ * (escalas `brand-X`, `terra-X`, `earth-X`).
  *
- * Paleta heredada de AgroM + extensión semántica. Tipografía Fraunces +
- * IBM Plex Sans + IBM Plex Mono (Google Fonts, ninguna en la blacklist
- * SRS). Density cómodo, shadows sutil, dark mode planificado v1.2.
+ * Sustituye v0.1 (Identity Sprint AgroM efímero de mayo, eliminado del
+ * frontend FitoLink el 13-may-2026). Los nombres CSS legacy se mantienen
+ * (--accent-action, --surface, --border, etc.) para no romper imports;
+ * sólo cambian los hex.
+ *
+ * Tipografía oficial del ecosistema: Instrument Serif (display) + DM Sans
+ * (body) + IBM Plex Mono (eyebrows técnicos `§ 01 · …` y datos densos).
  * ========================================================================== */
 
 :root {
-  /* — Paleta semántica (9 slots SaaS) ─────────────────────────────────────── */
-  --primary: #1b4332;            /* deep — verde profundo, brand primary */
-  --surface: #f4f0e8;            /* paper — crema cálida, body/main */
-  --surface-elevated: #e8ddc9;   /* parch — papel teja, cards/fieldsets */
-  --border: #c9a876;             /* rule — hairline terra-oro */
-  --text-strong: #0f2a22;        /* ink — texto principal y titulares */
-  --text-soft: #6b6b5c;          /* muted — captions, labels dl, small */
-  --accent-action: #1b4332;      /* = deep — botones submit, links primarios */
-  --accent-ok: #3a7d44;          /* success — activo, OK, vuelo apto */
-  --accent-warn: #d49343;        /* warning — meteo límite, próximo caducar */
-  --accent-danger: #b8312f;      /* alert — cancelado, retirado, error */
+  /* — Paleta v0.2 — espejo FitoLink (brand-X / terra-X / earth-X) ──────────── */
+  --primary: #46632e;            /* deep · brand-600 — topographic olive */
+  --primary-dark: #354b23;       /* deep-dark · brand-700 — hovers / acentos */
+  --surface: #fdf8f0;            /* paper · earth-50 — body cremoso */
+  --surface-elevated: #f5e6cc;   /* parch · earth-100 — cards/fieldsets */
+  --border: #d4a85a;             /* rule · earth-300 — hairline dorado */
+  --text-strong: #18230f;        /* ink · brand-900 — texto principal */
+  --text-soft: #6b7280;          /* muted · gray-500 Tailwind */
+  --accent-action: #46632e;      /* = deep — botones submit, links primarios */
+  --accent-ok: #15803d;          /* success · green-700 Tailwind */
+  --accent-warn: #c49032;        /* warning · earth-400 */
+  --accent-danger: #b91c1c;      /* alert · red-700 Tailwind */
+  --accent-info: #64748b;        /* info · slate-500 Tailwind */
 
   /* — Acento de marca puntual (no es CTA) ─────────────────────────────────── */
-  --brand-accent: #e07a3c;       /* terra — drone markers en mapa, focos editoriales */
+  --brand-accent: #d45220;       /* terra · terra-500 — focos editoriales */
 
-  /* — Info adicional ──────────────────────────────────────────────────────── */
-  --accent-info: #5b7a8f;        /* banners neutros informativos */
-
-  /* — Familias tipográficas ──────────────────────────────────────────────── */
-  --font-display: "Fraunces", Georgia, serif;
-  --font-heading: "Fraunces", Georgia, serif;
-  --font-body: "IBM Plex Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  /* — Familias tipográficas (oficial ecosistema 13-may-2026) ─────────────── */
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-heading: "Instrument Serif", Georgia, serif;
+  --font-body: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Consolas, monospace;
 
   /* — Radius ──────────────────────────────────────────────────────────────── */
   --radius-base: 4px;
@@ -44,9 +50,9 @@
   /* — Shadows sutil (no none, no marcada) ────────────────────────────────── */
   --shadow-none: none;
   --shadow-subtle: 0 1px 0 rgba(255, 255, 255, 0.5) inset,
-    0 10px 30px -15px rgba(15, 42, 34, 0.15);
+    0 10px 30px -15px rgba(24, 35, 15, 0.15);
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.4) inset,
-    0 4px 12px -4px rgba(15, 42, 34, 0.1);
+    0 4px 12px -4px rgba(24, 35, 15, 0.1);
 
   /* — Density cómodo ──────────────────────────────────────────────────────── */
   --space-tight: 8px;
@@ -91,9 +97,9 @@ body {
 
 h1,
 .display {
+  /* Instrument Serif no es variable (no opsz axis); peso 400 fijo. */
   font-family: var(--font-display);
-  font-weight: 500;
-  font-variation-settings: "opsz" 144, "SOFT" 0;
+  font-weight: 400;
   letter-spacing: -0.025em;
   line-height: 1.05;
 }
@@ -102,8 +108,7 @@ h2,
 h3,
 .heading {
   font-family: var(--font-heading);
-  font-weight: 500;
-  font-variation-settings: "opsz" 48, "SOFT" 0;
+  font-weight: 400;
   letter-spacing: -0.015em;
   line-height: 1.15;
 }
@@ -174,7 +179,7 @@ main code,
 main kbd {
   font-family: var(--font-mono);
   font-size: 0.875em;
-  background: rgba(27, 67, 50, 0.07);
+  background: rgba(70, 99, 46, 0.07);
   color: var(--text-strong);
   padding: 0.08em 0.4em;
   border-radius: var(--radius-base);
@@ -235,8 +240,8 @@ main .btn-danger {
 }
 
 main .btn-danger:hover {
-  background: #8a2422;
-  border-color: #8a2422;
+  background: #7f1d1d;
+  border-color: #7f1d1d;
 }
 
 main button:disabled {
@@ -280,9 +285,8 @@ main button:disabled {
 .drone-form legend {
   padding: 0 0.5rem;
   font-family: var(--font-heading);
-  font-weight: 500;
-  font-variation-settings: "opsz" 48;
-  font-size: 1.05rem;
+  font-weight: 400;
+  font-size: 1.1rem;
   letter-spacing: -0.01em;
   color: var(--text-strong);
 }
@@ -352,7 +356,7 @@ main button:disabled {
 .drone-form textarea:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(27, 67, 50, 0.15);
+  box-shadow: 0 0 0 3px rgba(70, 99, 46, 0.15);
 }
 
 .auth-form input[aria-invalid="true"],
@@ -364,7 +368,7 @@ main button:disabled {
 
 .auth-form input[aria-invalid="true"]:focus,
 .drone-form input[aria-invalid="true"]:focus {
-  box-shadow: 0 0 0 3px rgba(184, 49, 47, 0.18);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.18);
 }
 
 .auth-form__error,
@@ -473,7 +477,7 @@ main button:disabled {
   border: 1px dashed var(--border);
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
-  background: rgba(232, 221, 201, 0.4);
+  background: rgba(245, 230, 204, 0.4);
 }
 
 .dashboard__placeholder h2 {
@@ -510,9 +514,8 @@ main button:disabled {
   text-align: left;
   caption-side: top;
   font-family: var(--font-heading);
-  font-weight: 500;
-  font-variation-settings: "opsz" 48;
-  font-size: 1.05rem;
+  font-weight: 400;
+  font-size: 1.1rem;
   margin-bottom: 0.6rem;
   padding: 0;
   color: var(--text-strong);
@@ -539,11 +542,11 @@ main button:disabled {
   color: var(--text-soft);
   border-bottom-width: 1px;
   border-bottom-color: var(--border);
-  background: rgba(27, 67, 50, 0.06);
+  background: rgba(70, 99, 46, 0.06);
 }
 
 .drones-table tbody tr:hover {
-  background: rgba(244, 240, 232, 0.65);
+  background: rgba(253, 248, 240, 0.65);
 }
 
 .drones-table td code {
@@ -582,17 +585,17 @@ main button:disabled {
 
 .drone-status--active {
   color: var(--accent-ok);
-  background: rgba(58, 125, 68, 0.1);
+  background: rgba(21, 128, 61, 0.1);
 }
 
 .drone-status--maintenance {
   color: var(--accent-warn);
-  background: rgba(212, 147, 67, 0.12);
+  background: rgba(196, 144, 50, 0.12);
 }
 
 .drone-status--retired {
   color: var(--text-soft);
-  background: rgba(107, 107, 92, 0.08);
+  background: rgba(107, 114, 128, 0.08);
 }
 
 /* =============================================================================
@@ -604,7 +607,7 @@ main button:disabled {
   padding: 1.1rem 1.4rem;
   border: 1px solid var(--accent-danger);
   border-radius: var(--radius-lg);
-  background: rgba(184, 49, 47, 0.06);
+  background: rgba(185, 28, 28, 0.06);
 }
 
 .drone-edit__danger h2 {
@@ -1027,7 +1030,7 @@ main button:disabled {
 }
 
 .parcel-draw__counter .mono {
-  color: var(--brand-accent, #E07A3C);
+  color: var(--brand-accent, #d45220);
   font-size: 1rem;
 }
 

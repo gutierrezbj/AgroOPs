@@ -270,20 +270,50 @@ este checklist. Cualquier "no" obliga a refactor antes de liberar.
 
 ---
 
-## Identity Sprint
+## Identity Sprint v0.2 (13-may-2026 · ecosistema FitoLink)
 
-**v1 aplicada (Notion → Identity Tokens v1 — Para aplicar en código (Sprint 1)).** Tokens consumidos vía `src/app/globals.css`:
+**Cadena de herencia oficial:** `FitoLink → AgroM → AgroOps`.
 
-- **Paleta SaaS** — 9 slots (`--bg`, `--surface`, `--surface-elevated`, `--text`, `--text-muted`, `--border`, `--accent-action` = `--brand-primary` = `#1B4332`, `--accent-info` = `#2563EB`, `--accent-ok`, `--accent-warn`, `--accent-danger`).
-- **Marca AgroOps** — `--brand-primary` deep `#1B4332` (forest emergente), `--brand-accent` terra `#E07A3C` (solo logo/elementos de marca, nunca CTAs), papel `#F4F0E8`, pergamino `#E8DDC9`.
-- **Tipografía** — Fraunces variable (display, opsz 9-144 + wght 300-900) para `h1/h2/h3`, IBM Plex Sans (body 300-700), IBM Plex Mono (datos técnicos, lotes, coordenadas).
-- **Density:** cozy. **Shadows:** subtle. **No dark mode en v1.**
-- **Assets:** `/public/agroops-logo.svg` (wordmark 360×100) + `/public/favicon.svg` (monograma M sobre deep).
+**Decisión JuanCho 13-may-2026:** "AgroM es la empresa matriz. FitoLink es una herramienta de AgroM. AgroOps es la herramienta de operaciones. La paleta y tipografía que permanece es la de FitoLink porque es la que lleva más recorrido. AgroM hereda de FitoLink, por consiguiente AgroOps hereda también."
 
-**Reglas vigentes:**
-- Toda pantalla productiva debe consumir tokens (`var(--accent-action)`, `var(--text)`, etc.), no hex hardcoded.
-- `--brand-accent` (terra) solo en logo / acentos de marca. Las acciones (CTAs, links activos) usan `--accent-action` (deep).
+La paleta espeja `apps/web/tailwind.config.js` del repo `gutierrezbj/fitolink` (brand-*/terra-*/earth-*). El **Identity Sprint AgroM v0.1 efímero (mayo)** quedó eliminado del frontend FitoLink el 13-may; **NO usar** los hex antiguos `#1B4332 #E07A3C #0F2A22 #F4F0E8 #E8DDC9 #C9A876 #6B6B5C #B8312F #D49343 #3A7D44 #5B7A8F`.
+
+**Tokens v0.2 vigentes** (consumidos vía `src/app/globals.css`):
+
+| Token AgroOps | Hex | Mapeo FitoLink Tailwind |
+|---|---|---|
+| `--accent-action` = deep | `#46632e` | `brand-600` topographic olive |
+| `--primary-dark` | `#354b23` | `brand-700` hovers + acentos |
+| `--text-strong` = ink | `#18230f` | `brand-900` titulares + body fuerte |
+| `--brand-accent` = terra | `#d45220` | `terra-500` logo + focos editoriales |
+| `--surface` = paper | `#fdf8f0` | `earth-50` body cremoso |
+| `--surface-elevated` = parch | `#f5e6cc` | `earth-100` cards / fieldsets |
+| `--border` = rule | `#d4a85a` | `earth-300` hairline dorado |
+| `--text-soft` = muted | `#6b7280` | `gray-500` Tailwind nativo |
+| `--accent-ok` = success | `#15803d` | `green-700` Tailwind nativo |
+| `--accent-warn` = warning | `#c49032` | `earth-400` |
+| `--accent-danger` = alert | `#b91c1c` | `red-700` Tailwind nativo |
+| `--accent-info` = info | `#64748b` | `slate-500` Tailwind nativo |
+
+**Tipografía oficial v0.2:**
+- **Display:** Instrument Serif (Google Fonts, `ital@0;1`).
+- **Body:** DM Sans (400-700).
+- **Mono:** IBM Plex Mono (400-600) — eyebrows técnicos `§ 01 · …`.
+
+**NO** usar Fraunces ni IBM Plex Sans (eran del v0.1 efímero eliminado).
+
+**Assets actualizados:** `/public/agroops-logo.svg` (Instrument Serif `Agro` regular + `Ops` italic, punto terra-500) · `/public/favicon.svg` (monograma M en earth-50 sobre brand-600 con dot terra-500).
+
+**Referencia viva:**
+- Sistema visual en producción: https://fitolink.systemrapid.io/
+- Tailwind tokens: `apps/web/tailwind.config.js` (gutierrezbj/fitolink)
+- Email templates: `apps/api/src/services/emailService.ts` (AGROM_PALETTE)
+
+**Reglas vigentes (no cambian con v0.2):**
+- Toda pantalla productiva debe consumir tokens (`var(--accent-action)`, `var(--text-strong)`, etc.), no hex hardcoded.
+- `--brand-accent` (terra) solo en logo, dot del wordmark, active state nav, polígono en construcción del mapa. **Nunca en CTAs operativos.**
 - Distinctiveness Audit aplica desde aquí: si una pantalla podría ser de Shadcn-stock → reescribir.
+- **Los patrones específicos AgroOps** (state badges, tablas densas, map cards, status meters) son del producto, NO del ecosistema visual — no se tocan por este cambio.
 
 ---
 

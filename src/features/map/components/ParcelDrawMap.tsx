@@ -8,11 +8,11 @@
  * resultante al callback `onPolygonComplete`. Además renderiza las
  * parcelas existentes en gris como referencia para evitar dobles dibujos.
  *
- * Estilo de capas de dibujo: terra `#E07A3C` (--brand-accent). Es la
- * única excepción al "terra solo para marca" del Identity Sprint, pero
- * está justificado: marca el polígono "en construcción", literal acción
- * de marca del operador sobre el lienzo. Las parcelas existentes
- * mantienen el deep `#1B4332` desaturado.
+ * Estilo de capas de dibujo: terra `#d45220` (--brand-accent terra-500).
+ * Es la única excepción al "terra solo para marca" del Identity v0.2,
+ * pero está justificado: marca el polígono "en construcción", literal
+ * acción de marca del operador sobre el lienzo. Las parcelas existentes
+ * mantienen el deep `#46632e` desaturado.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, {
@@ -51,24 +51,24 @@ const CARTO_VOYAGER_STYLE =
 const EXISTING_FILL: Omit<FillLayerSpecification, "source"> = {
   id: "existing-fill",
   type: "fill",
-  paint: { "fill-color": "#1B4332", "fill-opacity": 0.12 },
+  paint: { "fill-color": "#46632e", "fill-opacity": 0.12 },
 };
 const EXISTING_STROKE: Omit<LineLayerSpecification, "source"> = {
   id: "existing-stroke",
   type: "line",
-  paint: { "line-color": "#1B4332", "line-width": 1, "line-opacity": 0.6 },
+  paint: { "line-color": "#46632e", "line-width": 1, "line-opacity": 0.6 },
 };
 
 // ---- Layers del polígono en construcción (terra) ----
 const DRAW_FILL: Omit<FillLayerSpecification, "source"> = {
   id: "draw-fill",
   type: "fill",
-  paint: { "fill-color": "#E07A3C", "fill-opacity": 0.18 },
+  paint: { "fill-color": "#d45220", "fill-opacity": 0.18 },
 };
 const DRAW_STROKE: Omit<LineLayerSpecification, "source"> = {
   id: "draw-stroke",
   type: "line",
-  paint: { "line-color": "#E07A3C", "line-width": 2 },
+  paint: { "line-color": "#d45220", "line-width": 2 },
 };
 
 // ---- Vertices visibles (círculos blancos con borde terra) ----
@@ -78,7 +78,7 @@ const DRAW_VERTEX: Omit<CircleLayerSpecification, "source"> = {
   paint: {
     "circle-radius": 5,
     "circle-color": "#FFFFFF",
-    "circle-stroke-color": "#E07A3C",
+    "circle-stroke-color": "#d45220",
     "circle-stroke-width": 2,
   },
 };

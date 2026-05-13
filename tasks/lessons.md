@@ -341,4 +341,27 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 
 ---
 
+## 2026-05-13 · Identity Sprint v0.2: la base visual del ecosistema es FitoLink (no AgroOps)
+
+**Contexto:** la sesión paralela del repo `gutierrezbj/fitolink` cerró un Sprint Identity que afecta a AgroOps. Decisión JuanCho: "AgroM es la empresa matriz. FitoLink es una herramienta de AgroM. AgroOps es la herramienta de operaciones. La paleta y tipografía que permanece es la de FitoLink porque lleva más recorrido. AgroM hereda de FitoLink, AgroOps hereda también."
+**Qué se descubrió:** el Identity Sprint AgroM v0.1 que aplicamos el 11-may (deep `#1B4332`, terra `#E07A3C`, Fraunces + IBM Plex Sans, papel `#F4F0E8`, etc.) fue **efímero**. Quedó eliminado del frontend FitoLink el 13-may. Construir identidad partiendo del producto más nuevo (AgroOps) es un error: el ecosistema lo arrastra el producto más maduro (FitoLink). Si Claude hubiera asumido que v0.1 era estable sin verificar el repo padre, todo el trabajo de los últimos 2 días habría chocado con el repo FitoLink en producción.
+**Solución / patrón adoptado:** cadena de herencia oficial documentada `FitoLink → AgroM → AgroOps` en CLAUDE.md. Antes de tocar identidad en cualquier producto del ecosistema, **verificar contra el repo padre** (en este caso `apps/web/tailwind.config.js` del repo FitoLink en `/Users/juanguti/dev/srs/fitolink`). Paleta v0.2: brand-* (olive topographic) + terra-* (terracotta) + earth-* (ochre cálido) — todos espejo del tailwind.config.js de FitoLink. Tipografía: Instrument Serif + DM Sans + IBM Plex Mono. **NUNCA** declarar identity como "aplicada" sin haber comprobado contra el padre.
+**Referencia:** `src/app/globals.css` :root con 12 tokens v0.2. `CLAUDE.md` sección "Identity Sprint v0.2" con tabla mapping completa. SVGs `public/agroops-logo.svg` y `public/favicon.svg` repintados. `src/features/map/components/{MapView,MapLegend,ParcelDrawMap}.tsx` y `src/features/field-notebook/pdf.ts` con hex v0.2.
+
+---
+
+## 2026-05-13 · REGLA #1 absoluta: NO INVENTAR — verificar contra código real
+
+**Contexto:** heredada del proyecto FitoLink padre, establecida por JuanCho 12-may-2026 tras incidente grave de publicidad engañosa en PricingPage ("Trazabilidad blockchain · firma eIDAS" cuando 0 referencias en código, "30% menos producto" sin estudio, etc.).
+**Qué se descubrió:** el bug a evitar es **rellenar con lo que sonaría completo/profesional** cuando se carece del dato real. JuanCho tiene 25 años trabajando con rigurosidad; una invención de Claude **NO es un error pequeño**, es una violación que puede costar reputación profesional, riesgo legal (LGP art. 4-5 + LCD art. 5), y tiempo de corrección. Aplica al proyecto AgroOps entero, no sólo a FitoLink.
+**Protocolo obligatorio adoptado:**
+1. Antes de afirmación técnica sobre el producto: `grep`/`read` contra el código real. Si la capacidad no existe → decir *"esto no existe en el código actual"*, sin maquillar con *"está casi listo"*.
+2. Antes de copy comercial: lista las afirmaciones, audita una por una con tabla ✅/❌/⚠️, redacta SOLO las verdes.
+3. Antes de proponer colaboradores: confirmados explícitamente por JuanCho. Prospects ≠ colaboradores activos.
+4. Si falta dato: *"No tengo el dato. ¿Te pregunto a ti, o lo dejamos en backlog?"* — siempre preferible a inventar.
+5. Vocabulario: NO usar "curar" (inglés curate) — usar revisar/filtrar/seleccionar. NO inglés técnico innecesario.
+**Referencia:** `/Users/juanguti/.claude/projects/-Users-juanguti-...-SRS---AGRO/memory/CRITICAL_no_inventar.md` (copiado desde memoria de FitoLink el 13-may). `MEMORY.md` con link como regla #1. Cualquier sesión que ignore esta regla rompe el acuerdo de trabajo.
+
+---
+
 <!-- añadir entradas nuevas arriba de este comentario, en orden descendente por fecha -->
