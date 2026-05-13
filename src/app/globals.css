@@ -111,9 +111,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Patrón FitoLink Dashboard (verificado en DashboardHome.tsx):
+ *   <h1 className="font-display text-4xl text-brand-600">   ← Instrument Serif
+ *   <h2 className="text-sm font-semibold text-gray-700">    ← DM Sans SEMIBOLD
+ *   <h3 className="text-sm font-semibold text-gray-700">    ← DM Sans SEMIBOLD
+ *
+ * Instrument Serif SOLO en el h1 hero del dashboard. h2/h3 productivos
+ * van en DM Sans 600 — más rápido de leer en cards densas y se siente
+ * SaaS, no editorial. */
 h1,
 .display {
-  /* Instrument Serif no es variable (no opsz axis); peso 400 fijo. */
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -123,10 +130,10 @@ h1,
 h2,
 h3,
 .heading {
-  font-family: var(--font-heading);
-  font-weight: 400;
-  letter-spacing: -0.015em;
-  line-height: 1.15;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
 }
 
 .mono,
@@ -300,8 +307,8 @@ main button:disabled {
 .auth-form legend,
 .drone-form legend {
   padding: 0 0.5rem;
-  font-family: var(--font-heading);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1.1rem;
   letter-spacing: -0.01em;
   color: var(--text-strong);
@@ -533,8 +540,8 @@ main button:disabled {
 .drones-table caption {
   text-align: left;
   caption-side: top;
-  font-family: var(--font-heading);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1.1rem;
   margin-bottom: 0.6rem;
   padding: 0;
@@ -820,8 +827,8 @@ main button:disabled {
 
 .map-popup__title {
   display: block;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1rem;
   margin: 0 0 0.4rem;
   color: var(--text-strong);
@@ -866,9 +873,9 @@ main button:disabled {
 
 .map-legend__title {
   margin: 0 0 0.6rem;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 0.95rem;
-  font-weight: 400;
+  font-weight: 600;
   color: var(--text-strong);
   letter-spacing: 0.01em;
 }
@@ -1126,8 +1133,8 @@ main button:disabled {
 
 .holded-sync__header h2 {
   margin: 0 0 0.25rem;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1.1rem;
   color: var(--text-strong);
 }
@@ -1250,8 +1257,8 @@ main button:disabled {
 
 .invoice-panel__header h2 {
   margin: 0 0 0.25rem;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1.05rem;
   color: var(--text-strong);
 }
@@ -1595,8 +1602,8 @@ main button:disabled {
 
 .field-notebook__table thead th {
   color: var(--surface-elevated);
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   text-align: left;
   padding: 0.6rem 0.55rem;
   font-size: 0.78rem;
@@ -1788,8 +1795,8 @@ main button:disabled {
 
 .audit-log__table thead th {
   color: var(--surface-elevated);
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   text-align: left;
   padding: 0.55rem 0.6rem;
   font-size: 0.78rem;
@@ -2157,6 +2164,7 @@ main button:disabled {
 
 .dashboard-home__hero h1 {
   margin: 0;
+  /* h1 hero: Instrument Serif (patrón FitoLink Bienvenida hero) */
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(1.6rem, 2.5vw, 2rem);
@@ -2173,8 +2181,8 @@ main button:disabled {
 
 .dashboard-home__section-title {
   margin: 0 0 0.85rem;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1.05rem;
   color: var(--text-strong);
   letter-spacing: -0.005em;
@@ -2215,8 +2223,8 @@ main button:disabled {
 
 .dashboard-home__card h3 {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1rem;
   color: var(--text-strong);
 }
@@ -2275,8 +2283,8 @@ main button:disabled {
 
 .empty-state__title {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 1.1rem;
   color: var(--text-strong);
 }
@@ -2335,6 +2343,7 @@ main button:disabled {
 
 .dashboard-listing > header h1 {
   margin: 0;
+  /* h1 hero de listing pages: Instrument Serif igual que dashboard home */
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(1.5rem, 2.2vw, 1.9rem);
