@@ -18,15 +18,26 @@
  * ========================================================================== */
 
 :root {
-  /* — Paleta v0.2 — espejo FitoLink (brand-X / terra-X / earth-X) ──────────── */
+  /* — Paleta v0.2 productivo — espejo del Dashboard FitoLink ──────────────────
+   * IMPORTANTE: FitoLink usa `bg-gray-50` + `bg-white` para body productivo
+   * (DashboardLayout: `<aside class="bg-white">` + `<main class="bg-gray-50">`).
+   * Las escalas `earth-*` están RESERVADAS para componentes EDITORIALES
+   * (login, terms, pricing, emails AgroM) — NO para body del producto.
+   *
+   * El hero del landing público usa `bg-[#fafdf7]` (white con tint verde
+   * casi imperceptible). Lo replicamos como `--surface` para mantener
+   * el aire del ecosistema.
+   * --------------------------------------------------------------------- */
   --primary: #46632e;            /* deep · brand-600 — topographic olive */
   --primary-dark: #354b23;       /* deep-dark · brand-700 — hovers / acentos */
-  --surface: #fdf8f0;            /* paper · earth-50 — body cremoso */
-  --surface-elevated: #f5e6cc;   /* parch · earth-100 — cards/fieldsets */
-  --border: #d4a85a;             /* rule · earth-300 — hairline dorado */
-  --text-strong: #18230f;        /* ink · brand-900 — texto principal */
+  --surface: #fafdf7;            /* body bg — white con tint verde sutil (=LandingPage hero) */
+  --surface-elevated: #ffffff;   /* cards / panels — blanco puro sobre surface */
+  --border: #e5e7eb;             /* gray-200 Tailwind — bordes neutrales */
+  --border-accent: rgba(212, 168, 90, 0.3); /* earth-300/30 — solo decorativo editorial */
+  --text-strong: #111827;        /* gray-900 Tailwind — texto principal body */
   --text-soft: #6b7280;          /* muted · gray-500 Tailwind */
   --accent-action: #46632e;      /* = deep — botones submit, links primarios */
+  --accent-action-soft: #f3f5ee; /* brand-50 — fondo sutil active state */
   --accent-ok: #15803d;          /* success · green-700 Tailwind */
   --accent-warn: #c49032;        /* warning · earth-400 */
   --accent-danger: #b91c1c;      /* alert · red-700 Tailwind */
@@ -34,6 +45,11 @@
 
   /* — Acento de marca puntual (no es CTA) ─────────────────────────────────── */
   --brand-accent: #d45220;       /* terra · terra-500 — focos editoriales */
+
+  /* — Paleta editorial (login, terms, pricing, emails AgroM) ──────────────── */
+  --editorial-paper: #fdf8f0;    /* earth-50 — paper bg para login y pages legales */
+  --editorial-parch: #f5e6cc;    /* earth-100 — bandeja para acentos editoriales */
+  --editorial-rule:  #d4a85a;    /* earth-300 — hairline dorado editorial */
 
   /* — Familias tipográficas (oficial ecosistema 13-may-2026) ─────────────── */
   --font-display: "Instrument Serif", Georgia, serif;
@@ -50,9 +66,9 @@
   /* — Shadows sutil (no none, no marcada) ────────────────────────────────── */
   --shadow-none: none;
   --shadow-subtle: 0 1px 0 rgba(255, 255, 255, 0.5) inset,
-    0 10px 30px -15px rgba(24, 35, 15, 0.15);
+    0 10px 30px -15px rgba(17, 24, 39, 0.15);
   --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.4) inset,
-    0 4px 12px -4px rgba(24, 35, 15, 0.1);
+    0 4px 12px -4px rgba(17, 24, 39, 0.1);
 
   /* — Density cómodo ──────────────────────────────────────────────────────── */
   --space-tight: 8px;
@@ -400,6 +416,13 @@ main button:disabled {
  * Login
  * ========================================================================== */
 
+/* /login es componente EDITORIAL — usa la paleta paper/parch/rule del
+ * ecosistema (igual que login/terms/pricing en FitoLink). El producto
+ * productivo (/dashboard/*) sigue con surface neutro blanco. */
+body:has(.login-page) {
+  background: var(--editorial-paper);
+}
+
 .login-page {
   display: flex;
   flex-direction: column;
@@ -477,7 +500,7 @@ main button:disabled {
   border: 1px dashed var(--border);
   border-radius: var(--radius-lg);
   padding: 1rem 1.25rem;
-  background: rgba(245, 230, 204, 0.4);
+  background: rgba(70, 99, 46, 0.04); /* tinte brand sutil — placeholder muted */
 }
 
 .dashboard__placeholder h2 {
@@ -546,7 +569,7 @@ main button:disabled {
 }
 
 .drones-table tbody tr:hover {
-  background: rgba(253, 248, 240, 0.65);
+  background: rgba(70, 99, 46, 0.04); /* row hover — brand-600 a 4%, igual que FitoLink */
 }
 
 .drones-table td code {
