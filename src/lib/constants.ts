@@ -50,6 +50,39 @@ export const MISSION_STATUS_FLOW = [
 export const MISSION_STATUS_TERMINAL = ["invoiced", "cancelled"] as const;
 
 /**
+ * Cultivos estándar para el desplegable de `parcels.crop`. La lista cubre
+ * los cultivos más comunes del territorio español agrícola — alineada con
+ * lo que AgroM ve en campo (olivar Andalucía, almendro Albacete/Murcia,
+ * cítricos Valencia/Murcia, viña La Mancha/Rioja, cereal Castilla).
+ *
+ * El backend NO restringe `crop` a esta lista (sigue siendo `text` libre
+ * en `parcels.crop`) — esto es UX puramente. Si el operador necesita un
+ * cultivo no listado, el `otros` permite seguir avanzando y se puede
+ * editar manualmente con SQL si es muy frecuente (en cuyo caso añadirlo
+ * aquí). Patrón mismo que `ClientType` enum: prácticos por defecto +
+ * escape para casos raros.
+ *
+ * Las variedades (`cropVariety`) siguen siendo text libre porque hay
+ * decenas por cultivo (Picual, Hojiblanca, Marcona, Navelina, Tempranillo,
+ * etc.) y no compensa mantener la lista.
+ */
+export const CROP_OPTIONS = [
+  { value: "olivar", label: "Olivar" },
+  { value: "almendro", label: "Almendro" },
+  { value: "viña", label: "Viña / vid" },
+  { value: "cítricos", label: "Cítricos" },
+  { value: "cereal", label: "Cereal (trigo, cebada, avena)" },
+  { value: "hortícola", label: "Hortícola" },
+  { value: "frutales", label: "Frutales (manzana, pera, melocotón)" },
+  { value: "girasol", label: "Girasol" },
+  { value: "maíz", label: "Maíz" },
+  { value: "patata", label: "Patata" },
+  { value: "otros", label: "Otros" },
+] as const;
+
+export type CropValue = (typeof CROP_OPTIONS)[number]["value"];
+
+/**
  * Precio por hectárea aplicado en €. Configurable vía env var
  * `AGROOPS_PRICE_PER_HA_EUR`. Si no está definida o es 0, la facturación
  * automática se rechaza con error claro (no factura con 0 €).

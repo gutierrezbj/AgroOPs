@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { CROP_OPTIONS } from "@/lib/constants";
 import { listClients } from "@/features/clients/services";
 import { FieldNotebookTable } from "@/features/field-notebook/components/FieldNotebookTable";
 import {
@@ -155,12 +156,23 @@ export default async function FieldNotebookPage({ searchParams }: PageProps) {
           </label>
           <label>
             Cultivo
-            <input
-              type="text"
-              name="crop"
-              defaultValue={filters.crop ?? ""}
-              placeholder="olivar, cítricos, …"
-            />
+            <select name="crop" defaultValue={filters.crop ?? ""}>
+              <option value="">Todos</option>
+              {/* Si el filtro tiene un valor que NO está en CROP_OPTIONS
+                  (ej. cultivo legacy guardado en parcels), lo preservamos
+                  como opción dinámica para que el usuario pueda quitarlo. */}
+              {filters.crop &&
+                !CROP_OPTIONS.some((o) => o.value === filters.crop) && (
+                  <option value={filters.crop}>
+                    {filters.crop} (actual)
+                  </option>
+                )}
+              {CROP_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </label>
           <button type="submit">Aplicar</button>
           {(filters.dateFrom ||

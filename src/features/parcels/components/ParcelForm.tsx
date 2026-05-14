@@ -10,6 +10,7 @@
  * (SIGPAC / Google Earth / QGIS).
  */
 import { useRef, useState, useActionState } from "react";
+import { CROP_OPTIONS } from "@/lib/constants";
 import { createParcelAction } from "../actions/create-parcel";
 import {
   initialCreateParcelState,
@@ -246,19 +247,16 @@ function SharedFields({
 
       <h3>Cultivo</h3>
 
-      <Field
-        name="crop"
-        label="Cultivo principal"
+      <CropSelect
         defaultValue={parcel?.crop ?? ""}
         error={errors.crop}
-        placeholder="olivar, cítricos, almendro, vid..."
       />
       <Field
         name="cropVariety"
         label="Variedad"
         defaultValue={parcel?.cropVariety ?? ""}
         error={errors.cropVariety}
-        placeholder="Picual, Navelina, ..."
+        placeholder="Picual, Navelina, Marcona, Tempranillo..."
       />
 
       <label htmlFor="notes">
@@ -277,6 +275,53 @@ function SharedFields({
         </p>
       )}
     </fieldset>
+  );
+}
+
+interface CropSelectProps {
+  defaultValue: string;
+  error?: string;
+}
+
+/**
+ * Desplegable de cultivos con la lista canónica `CROP_OPTIONS`. Si la
+ * parcela tiene un `crop` guardado que no coincide con ninguna opción
+ * (ej. datos legacy o cultivo raro), se añade dinámicamente como opción
+ * extra al inicio para preservar el valor existente.
+ */
+function CropSelect({ defaultValue, error }: CropSelectProps) {
+  const errorId = error ? "crop-error" : undefined;
+  const optionsValues: string[] = CROP_OPTIONS.map((o) => o.value);
+  const showLegacyValue =
+    defaultValue.length > 0 && !optionsValues.includes(defaultValue);
+  return (
+    <>
+      <label htmlFor="crop">
+        Cultivo principal
+        <select
+          id="crop"
+          name="crop"
+          defaultValue={defaultValue}
+          aria-invalid={error ? "true" : "false"}
+          aria-describedby={errorId}
+        >
+          <option value="">— Sin especificar —</option>
+          {showLegacyValue && (
+            <option value={defaultValue}>{defaultValue} (actual)</option>
+          )}
+          {CROP_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      {error && (
+        <p id={errorId} role="alert" className="drone-form__error">
+          {error}
+        </p>
+      )}
+    </>
   );
 }
 
