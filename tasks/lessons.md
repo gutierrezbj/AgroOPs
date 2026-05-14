@@ -14,6 +14,82 @@ Formato por entrada:
 
 ---
 
+## 2026-05-14 · `POSTGRES_PASSWORD` debe ser URL-safe (hex, no base64)
+
+**Contexto:** primer deploy productivo a Servidor 2. El `.env.production` generaba el password con `openssl rand -base64 24`. El `docker-compose.prod.yml` interpola ese valor en `DATABASE_URL: postgresql://agroops:${POSTGRES_PASSWORD}@postgres:5432/agroops`.
+**Qué rompió:** el password base64 contenía `/` (y/o `+`, `=`). El cliente `pg` (vía `pg-connection-string`) parsea la URL con `new URL(...)` de Node, que interpreta `/` como separador de path → `TypeError: ERR_INVALID_URL` enmascarado por drizzle como `Failed query: CREATE SCHEMA IF NOT EXISTS "drizzle"`. El error verdadero estaba en `e.cause.message: "Invalid URL"`. Migración hang en spinner "applying migrations…" sin mensaje útil.
+**Solución / patrón adoptado:** generar el password con `openssl rand -hex 24` (48 chars `0-9 + a-f`, 192 bits entropy, ningún char reservado de URL). Aplica al `POSTGRES_PASSWORD` y a cualquier secret que viaje dentro de una connection string (`REDIS_URL` también si lleva password). `.env.production.example` y el runbook deben recomendar **hex**, no base64. Alternativa: URL-encode con `jq -nr --arg p "$P" '$p|@uri'`, pero hex es más ergonómico.
+**Lección general:** cualquier valor que termine dentro de un URI (DATABASE_URL, REDIS_URL, S3 endpoints con credenciales) debe ser **URL-safe por construcción**, no por encoding posterior. Si hace falta entropy alta, hex es seguro; si hace falta cortesía visual, base64url (`tr '+/' '-_'`) es la siguiente opción.
+**Referencia:** primer deploy 14-may-2026, runbook `docs/deploy-runbook.md`. Actualizar el ejemplo de generación de password ahí.
+
+---
+
+## 2026-05-14 · Next 16 middleware matcher debe excluir `/api/health` explícitamente
+
+**Contexto:** stack productivo arriba en Servidor 2. Container `agroops-web` health status atascado en `starting` aunque `pnpm dev` localmente funcionaba. Docker HEALTHCHECK ejecuta `wget -qO- http://localhost:3000/api/health` y siempre fallaba con 307.
+**Qué rompió:** `src/middleware.ts` tenía `matcher: "/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.).*)"`. Sólo excluía `api/auth`. La ruta `/api/health` caía bajo el match → Auth.js v5 detecta "sin sesión" → 307 redirect a `/login?callbackUrl=...`. Healthchecker recibe 307, no JSON, marca unhealthy. Tampoco serviría Uptime Robot externo.
+**Solución / patrón adoptado:** añadir cada ruta API pública al negation lookahead del matcher. Para AgroOps v1.0: `api/auth|api/health`. Si en v1.1 publicamos otras (NOTAMs/parcelas geojson públicas), añadirlas al mismo grupo: `api/auth|api/health|api/notams/geojson|api/parcels/geojson`.
+**Lección general:** la matcher de Next middleware es **deny-by-default** (todo lo que no esté en el negation lookahead se intercepta). Cuando se añada una API pública nueva, añadir su path al matcher es parte del PR — no algo a recordar después. Pista de smoke: si Docker HEALTHCHECK status queda `starting → unhealthy` pero `pnpm dev` funciona, lo primero a chequear es la matcher (no producción vs desarrollo).
+**Referencia:** commit `1b37647 fix(middleware): excluir /api/health del auth matcher`, primer deploy 14-may-2026.
+
+---
+
+## 2026-05-14 · Drizzle ORM: lazy init via Proxy obligatorio si el módulo se importa en Docker build
+
+**Contexto:** primer Docker build de AgroOps falla en `Step 16/33: RUN pnpm build` con `Error: DATABASE_URL no está definida. Revisa .env.local`. Localmente funciona porque `.env.local` siempre está; en Docker build no — `.env.production` lo lee el runtime, no el build.
+**Qué rompió:** `src/db/index.ts` original creaba `Pool` y `drizzle(...)` a top-level. Next 16 `next build` ejecuta una fase "Collecting page data" que importa transitivamente todos los Server Components y API routes — cualquier `@/db` import disparaba el throw top-level → build fail.
+**Solución / patrón adoptado:** lazy init via `Proxy`. El `Pool` y el cliente drizzle se crean al **primer property access** (`db.query`, `db.execute`, etc.), no al cargar el módulo. El Proxy es transparente para los callers: `db.query.users.findFirst(...)` funciona igual; coste de `Reflect.get` despreciable. Patrón canónico:
+```ts
+let _db: DrizzleDb | null = null;
+function getDb(): DrizzleDb {
+  if (_db) return _db;
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL no definida…");
+  _db = drizzle(new Pool({ connectionString: url }), { schema });
+  return _db;
+}
+export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
+  get: (_t, p, r) => Reflect.get(getDb(), p, r),
+});
+```
+Aplicable a cualquier cliente que lea env vars sensibles a top-level (Redis, Holded SDK, AEMET) cuando exista riesgo de import en build time.
+**Lección general:** "init en module-load time" es cómodo en dev (un fail rápido si falta la env) pero hostil al build-time analysis de Next/Turbopack. Para librerías de runtime, la opción correcta es **lazy + fail al primer uso real**. Si la app nunca hace queries en build (todas las routes son `force-dynamic` o lazy), la app construye sin tener `DATABASE_URL`.
+**Referencia:** commit `b149b3e fix(db): lazy init via Proxy (Next 16 build-time safety)`, primer deploy 14-may-2026.
+
+---
+
+## 2026-05-14 · `drizzle-kit migrate` CLI cuelga el spinner ora en non-TTY — usar API programática
+
+**Contexto:** intento ejecutar `pnpm exec drizzle-kit migrate` dentro de un container one-shot `node:22-alpine` (no-TTY).
+**Qué rompió:** CLI imprime `[⣷] applying migrations…` y se queda colgado. Exit code 1 sin mensaje útil — el spinner `ora` engulle stderr cuando no hay TTY. El error verdadero (Invalid URL del POSTGRES_PASSWORD, ver lección hermana) sólo apareció al bypassear el CLI.
+**Solución / patrón adoptado:** para entornos sin TTY (CI, docker run, deploy scripts) usar la API programática de drizzle-orm directamente:
+```ts
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { Pool } from "pg";
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+await migrate(drizzle(pool), { migrationsFolder: "./src/db/migrations" });
+await pool.end();
+```
+Misma lógica que el CLI internamente pero sin wrapper de spinner. Errores van directos a `stderr` con stack completo.
+**Lección general:** los CLIs con spinners (`ora`, `listr`, `signale`) suelen ser hostiles a logs estructurados y a non-TTY. Para pipelines de CI/deploy, preferir la API programática del paquete subyacente. drizzle-kit, drizzle-orm, prisma, knex todos exponen migrate como función.
+**Referencia:** primer deploy 14-may-2026. Para futuros runbooks: incluir `scripts/db-migrate.mjs` con el snippet programático y llamar `node scripts/db-migrate.mjs` en vez de `pnpm db:migrate` cuando estés en docker run / CI.
+
+---
+
+## 2026-05-14 · Hostinger DNS: panel UI → NS autoritativos puede tardar >30 min
+
+**Contexto:** primer deploy AgroOps a Servidor 2. JuanCho actualiza el A record `agroops.agrom.es → 187.77.71.102` en el panel Hostinger. 30+ min después los NS autoritativos del propio Hostinger (`athena.dns-parking.com`, `apollo.dns-parking.com`) consultados directamente seguían devolviendo el IP viejo (`72.62.41.234`).
+**Qué se descubrió:** Hostinger tiene latencia interna entre su panel de management y la capa de DNS autoritativo. NO es caché en mi cliente — `dig @athena.dns-parking.com` salta toda la cadena de resolvers públicos y le pregunta directo al NS final. Si éste sigue devolviendo lo viejo, es Hostinger interno.
+**Solución / patrón adoptado:**
+1. **No bloquear el deploy en DNS.** Todos los pasos previos a certbot (Postgres+Redis up, migrate, seed, web up, nginx server block + reload con `nginx -t` verde) son agnósticos al DNS. Hacerlos por SSH-Tailscale + Host header local. El sitio queda funcional E2E vía `curl -H "Host: agroops.agrom.es" http://<IP-server>/api/health` antes de DNS verde.
+2. **Certbot se queda como último paso aislado.** Cuando `dig @<auth-NS> <dominio>` devuelva el IP correcto, ejecutar `certbot --nginx -d <dominio> --non-interactive --agree-tos -m <email>` — es el único paso que requiere DNS público resuelto (HTTP-01 challenge).
+3. **Diagnóstico de "DNS no propaga":** consultar los NS autoritativos directamente con `dig @<ns> <dominio>`. Si responden el valor nuevo pero los resolvers públicos no → cuestión de TTL (1h máx). Si los NS autoritativos siguen con el valor viejo → es el registrar, NO toques nada, sólo espera o vuelve al panel a confirmar que el cambio sigue ahí.
+**Lección general:** un deploy productivo a "dominio público vía registrar" tiene una etapa irreducible de espera DNS que **no se acelera con `make`**. Aceptarla y arquitectar el deploy script de forma que todo lo demás esté verde antes — así DNS verde = un solo comando certbot, no un fire drill.
+**Referencia:** primer deploy 14-may-2026, runbook `docs/deploy-runbook.md`.
+
+---
+
 ## 2026-05-14 · Dominio AgroOps rectificado a `agroops.agrom.es` (coherente con herencia ecosistema)
 
 **Contexto:** preparación primer deploy productivo a VPS Hostinger. Auditoría reveló 12 archivos con `agroops.systemrapid.io` (residuos del intento Identity v0.2 del 13-may) vs el subdominio histórico `agroops.agrom.es` mencionado en SETUP.md / README / notion-staging del Sprint 0.
