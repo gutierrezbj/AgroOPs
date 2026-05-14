@@ -34,14 +34,17 @@ const MARGIN_BOTTOM = 32;
 const HEADER_HEIGHT = 60;
 const FOOTER_HEIGHT = 24;
 
-// Identity v0.2 — FitoLink → AgroM → AgroOps (decisión JuanCho 13-may-2026).
+// Identity v0.2 — FitoLink → AgroM → AgroOps. Paleta espejo del dashboard
+// productivo (no del paper editorial earth-50/100 que se descartó tras
+// feedback 'el cremita NO').
+//
 // pdf-lib usa rgb(r/255, g/255, b/255) en floats 0-1.
 const COLOR_TEXT = rgb(24 / 255, 35 / 255, 15 / 255); // #18230f ink (brand-900)
 const COLOR_MUTED = rgb(107 / 255, 114 / 255, 128 / 255); // #6b7280 muted (gray-500)
-const COLOR_LINE = rgb(212 / 255, 168 / 255, 90 / 255); // #d4a85a rule (earth-300) ~50% alpha sería ideal, sin alpha damos hairline visible
+const COLOR_LINE = rgb(229 / 255, 231 / 255, 235 / 255); // #e5e7eb gray-200 (hairline neutral, no dorado earth-300)
 const COLOR_HEADER_BG = rgb(70 / 255, 99 / 255, 46 / 255); // #46632e deep (brand-600)
-const COLOR_HEADER_TEXT = rgb(253 / 255, 248 / 255, 240 / 255); // #fdf8f0 paper (earth-50)
-const COLOR_ZEBRA = rgb(245 / 255, 230 / 255, 204 / 255); // #f5e6cc parch (earth-100)
+const COLOR_HEADER_TEXT = rgb(255 / 255, 255 / 255, 255 / 255); // white sobre brand-600
+const COLOR_ZEBRA = rgb(250 / 255, 253 / 255, 247 / 255); // #fafdf7 surface (= body bg web)
 
 interface Column {
   key: keyof FieldNotebookEntry | "compositeSigpac" | "compositeProduct" | "compositeOperator" | "compositeEquipment";
@@ -52,70 +55,80 @@ interface Column {
   value?: (e: FieldNotebookEntry) => string;
 }
 
+// Anchos calibrados para A4 landscape (842pt) menos margins (2 * 24pt = 48pt)
+// → 794pt usable. Suma de la tabla DEBE ser ≤ 794 para no desbordar.
+// Reparto v0.2 (suma exacta 794):
+//   46+60+68+74+50+38+88+50+44+48+48+70+58+52 = 794
 const COLUMNS: Column[] = [
   {
     key: "appliedAt",
     label: "Fecha",
-    width: 52,
+    width: 46,
     value: (e) => new Date(e.appliedAt).toLocaleDateString("es-ES"),
   },
-  { key: "missionCode", label: "Misión", width: 66 },
+  { key: "missionCode", label: "Misión", width: 60 },
   {
     key: "clientName",
     label: "Cliente",
-    width: 96,
+    width: 68,
     value: (e) => `${e.clientName}\n${e.clientTaxId}`,
   },
   {
     key: "compositeSigpac",
     label: "Parcela SIGPAC",
-    width: 96,
+    width: 74,
     value: (e) => `${e.parcelName}\n${e.sigpacReference}`,
   },
   {
     key: "crop",
     label: "Cultivo",
-    width: 60,
-    value: (e) => `${e.crop ?? "—"}${e.cropVariety ? ` (${e.cropVariety})` : ""}`,
+    width: 50,
+    value: (e) => {
+      // Cultivo en línea 1, variedad en línea 2 si existe (más legible
+      // que '(Marcona)' inline porque trunca menos)
+      const lines = [e.crop ?? "—"];
+      if (e.cropVariety) lines.push(e.cropVariety);
+      return lines.join("\n");
+    },
   },
   {
     key: "areaTreatedHa",
     label: "Área ha",
-    width: 42,
+    width: 38,
     numeric: true,
     value: (e) => e.areaTreatedHa.toFixed(2),
   },
   {
     key: "compositeProduct",
     label: "Producto / Materia activa",
-    width: 110,
+    width: 88,
     value: (e) => `${e.productCommercialName}\n${e.productActiveIngredient}`,
   },
-  { key: "lotUsed", label: "Lote", width: 56 },
+  { key: "lotUsed", label: "Lote", width: 50 },
   {
     key: "productMapaRegistration",
     label: "Reg. MAPA",
-    width: 52,
+    width: 44,
     value: (e) => e.productMapaRegistration ?? "—",
   },
   {
     key: "appliedDoseValue",
     label: "Dosis",
-    width: 56,
+    width: 48,
     numeric: true,
     value: (e) => formatDose(e.appliedDoseValue, e.appliedDoseUnit),
   },
   {
     key: "totalAmountUsed",
     label: "Volumen total",
-    width: 56,
+    width: 48,
     numeric: true,
     value: (e) => formatTotalAmount(e.totalAmountUsed, e.totalAmountUnit),
   },
   {
     key: "compositeOperator",
     label: "Operador / ROPO",
-    width: 90,
+    width: 70,
     value: (e) => {
       const lines = [e.pilotName ?? "—"];
       if (e.pilotRopoNumber) lines.push(`ROPO ${e.pilotRopoNumber}`);
@@ -125,7 +138,7 @@ const COLUMNS: Column[] = [
   {
     key: "compositeEquipment",
     label: "Equipo",
-    width: 78,
+    width: 58,
     value: (e) => {
       const lines = [e.droneModel ?? "—"];
       if (e.droneSerialNumber) lines.push(`SN ${e.droneSerialNumber}`);
@@ -135,7 +148,7 @@ const COLUMNS: Column[] = [
   {
     key: "albaranCode",
     label: "Albarán",
-    width: 70,
+    width: 52,
     value: (e) => e.albaranCode ?? "—",
   },
 ];
@@ -325,7 +338,8 @@ function computeRowHeight(entry: FieldNotebookEntry): number {
     const lines = value.split("\n").length;
     if (lines > maxLines) maxLines = lines;
   }
-  return 12 + (maxLines - 1) * 9 + 4; // base + extra por línea + padding
+  // base 11 (font 6.5 + breathing) + extra por línea adicional + padding inferior
+  return 11 + (maxLines - 1) * 8.5 + 3;
 }
 
 function drawRow(
@@ -370,14 +384,25 @@ function drawRow(
       col.numeric === true ||
       col.key === "compositeSigpac";
     const lineFont = isMono ? fontMono : font;
+    // Font-size 6.5 (era 7) — gana ~7% más caracteres antes de truncar.
+    // Padding interno reducido a 2pt (era 3) — gana 2pt más por columna.
+    const fontSize = 6.5;
+    const cellPadding = 2;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]!;
-      const truncated = truncateToWidth(line, lineFont, col.width - 6);
+      const truncated = truncateToWidth(line, lineFont, col.width - cellPadding * 2, fontSize);
       page.drawText(truncated, {
-        x: x + 3 + (col.numeric ? col.width - 6 - lineFont.widthOfTextAtSize(truncated, 7) : 0),
-        y: yTop - 9 - i * 9,
+        x:
+          x +
+          cellPadding +
+          (col.numeric
+            ? col.width -
+              cellPadding * 2 -
+              lineFont.widthOfTextAtSize(truncated, fontSize)
+            : 0),
+        y: yTop - 8.5 - i * 8.5,
         font: lineFont,
-        size: 7,
+        size: fontSize,
         color: i === 0 ? COLOR_TEXT : COLOR_MUTED,
       });
     }
@@ -385,10 +410,18 @@ function drawRow(
   }
 }
 
-function truncateToWidth(text: string, font: PDFFont, maxWidth: number): string {
-  if (font.widthOfTextAtSize(text, 7) <= maxWidth) return text;
+function truncateToWidth(
+  text: string,
+  font: PDFFont,
+  maxWidth: number,
+  fontSize = 6.5,
+): string {
+  if (font.widthOfTextAtSize(text, fontSize) <= maxWidth) return text;
   let result = text;
-  while (result.length > 1 && font.widthOfTextAtSize(`${result}…`, 7) > maxWidth) {
+  while (
+    result.length > 1 &&
+    font.widthOfTextAtSize(`${result}…`, fontSize) > maxWidth
+  ) {
     result = result.slice(0, -1);
   }
   return `${result}…`;
