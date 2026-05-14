@@ -116,22 +116,47 @@ Cronograma SDD-08: **9 semanas v1.0** (Sprint 0 + 5 sprints).
 
 - **Sin staging.** Mac local → push a `main` → `./scripts/deploy.sh` (SSH) → producción VPS Hostinger.
 - **Dominio:** `agroops.agrom.es` (operación productiva AgroM). Coherente con la cadena de herencia del ecosistema FitoLink → AgroM → AgroOps: AgroOps es la herramienta de operaciones de AgroM, vive bajo el dominio de la matriz. La marca producto sigue siendo AgroOps (ADR-10) pero el subdominio operativo es `agroops.agrom.es`.
-- **VPS:** Hostinger compartido con FitoLink (mismo nginx, mismo Let's Encrypt). Puertos SRS offset +170: Postgres `127.0.0.1:6170`, Redis `127.0.0.1:6171`, Next.js `127.0.0.1:3170`. nginx proxy_pass HTTPS.
+- **VPS:** Servidor 2 (`187.77.71.102`, Hostinger compartido con FitoLink/SkyPro/Ottoia/etc). Mismo nginx, mismo Let's Encrypt. Puertos SRS offset +170: Postgres `127.0.0.1:6170`, Redis `127.0.0.1:6171`, Next.js `127.0.0.1:3170`. nginx termina TLS y reenvía.
+- **SSH operativo:** Tailscale `root@srs-staging` (= `100.110.52.22`). NO usar IP pública directa (fail2ban activo).
 
 **Artefactos productivos:**
-- `Dockerfile` — Next 16 standalone multi-stage (imagen ~150MB).
+- `Dockerfile` — Next 16 standalone multi-stage (imagen ~230MB).
 - `docker-compose.prod.yml` — Postgres+PostGIS + Redis + web bindeados a localhost.
-- `.env.production.example` — plantilla con todas las env vars (AEMET, ENAIRE, Telegram, S3 backup).
+- `.env.production.example` — plantilla con todas las env vars (AEMET, ENAIRE, Telegram, S3 backup). `POSTGRES_PASSWORD` debe ser **hex** (URL-safe), no base64 (ver lessons.md 14-may).
 - `scripts/deploy.sh` — deploy idempotente SSH con snapshot DB pre-deploy + healthcheck post-deploy + notificación Telegram.
 - `docs/nginx-agroops.conf` — server block para `/etc/nginx/sites-available/`.
 - `docs/deploy-runbook.md` — runbook completo paso a paso (primer deploy + deploys subsiguientes + rollback + troubleshooting).
 
 **Primer deploy:** seguir `docs/deploy-runbook.md` sección "Checklist pre-primer-deploy".
-**Deploys subsiguientes:** `AGROOPS_SSH_HOST=user@vps.systemrapid.io ./scripts/deploy.sh`.
+**Deploys subsiguientes:** `AGROOPS_SSH_HOST=root@srs-staging ./scripts/deploy.sh`.
 
 **Disciplina pre-merge:** 0 errores TS, 0 ESLint errors, e2e críticos verdes, migraciones reversibles.
 **Pre-deploy:** snapshot DB automático (incluido en `deploy.sh`).
 **Post-deploy:** healthcheck `/api/health` verificado (rollback manual si falla) + Telegram OK.
+
+### Estado primer deploy productivo (14-may-2026)
+
+**Stack levantado en Servidor 2** (`/opt/apps/agroops/`):
+
+| | |
+|---|---|
+| Repo HEAD | `1b37647` (incluye fixes lazy init db + middleware api/health) |
+| Postgres 16 + PostGIS 3.4.3 | healthy `127.0.0.1:6170`, schema migrado (13 tablas + drizzle tracking) |
+| Redis 7 | healthy `127.0.0.1:6171` |
+| Web `agroops-web:latest` | healthy `127.0.0.1:3170`, Docker HEALTHCHECK verde |
+| Seed AgroM | 3 users + 3 drones (T50/Mavic 3E/D-RTK 2) + 1 piloto (John ROPO) + 1 cliente demo |
+| nginx server block | instalado + symlinked + reloaded, `nginx -t` verde |
+| `/api/health` E2E | **200 OK** vía `curl -H "Host: agroops.agrom.es"` (DB ok, Redis ok, integraciones vacías = `degraded` esperado) |
+
+**Pendiente único:** certbot tras propagación DNS Hostinger (panel UI ya configurado, `athena.dns-parking.com` aún sirve IP viejo al cerrar sesión 14-may noche; Hostinger latente, no bloqueante). Cuando DNS verde:
+
+```bash
+ssh root@srs-staging "certbot --nginx -d agroops.agrom.es \
+  --non-interactive --agree-tos \
+  --email gutierrezbj@gmail.com --redirect"
+```
+
+Ver `tasks/handover-2026-05-14.md` para reanudación completa de la sesión (credenciales, próximos pasos, troubleshooting).
 
 ---
 

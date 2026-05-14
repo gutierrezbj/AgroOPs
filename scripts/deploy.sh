@@ -3,20 +3,20 @@
 # AgroOps — Deploy a VPS Hostinger
 #
 # Flujo idempotente vía SSH. Asume:
-#  - El repo está clonado en /opt/agroops en el VPS
+#  - El repo está clonado en /opt/apps/agroops en el VPS
 #  - El VPS tiene Docker + Docker Compose instalados
 #  - El VPS tiene nginx con server block para agroops.agrom.es
 #    apuntando a 127.0.0.1:3170 (ver docs/nginx-agroops.conf)
-#  - El VPS tiene /opt/agroops/.env.production con todas las env vars
+#  - El VPS tiene /opt/apps/agroops/.env.production con todas las env vars
 #    (AUTH_SECRET, POSTGRES_PASSWORD, AEMET_API_KEY, etc.)
 #
 # Variables esperadas en local:
-#  AGROOPS_SSH_HOST     usuario@host del VPS (ej. juancho@vps.systemrapid.io)
+#  AGROOPS_SSH_HOST     usuario@host del VPS (ej. root@srs-staging vía Tailscale)
 #  AGROOPS_SSH_PORT     default 22
-#  AGROOPS_REMOTE_PATH  default /opt/agroops
+#  AGROOPS_REMOTE_PATH  default /opt/apps/agroops
 #
 # Uso:
-#  AGROOPS_SSH_HOST=juancho@vps.systemrapid.io ./scripts/deploy.sh
+#  AGROOPS_SSH_HOST=root@srs-staging ./scripts/deploy.sh
 #
 # Exit codes:
 #  0 OK
@@ -46,7 +46,7 @@ require_env() {
 
 require_env AGROOPS_SSH_HOST
 SSH_PORT="${AGROOPS_SSH_PORT:-22}"
-REMOTE_PATH="${AGROOPS_REMOTE_PATH:-/opt/agroops}"
+REMOTE_PATH="${AGROOPS_REMOTE_PATH:-/opt/apps/agroops}"
 SSH="ssh -p ${SSH_PORT} -o ConnectTimeout=10 ${AGROOPS_SSH_HOST}"
 
 LOCAL_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo dev)"

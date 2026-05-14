@@ -18,11 +18,11 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 - [x] Manifiesto SDD-SRS actualizado (fila AgroOps, v1.8)
 - [x] Cuaderno AgroM actualizado (sección 2.3 AgroOps, v0.3)
 - [x] Discrepancias del bundle Sprint 0 documentadas + 5 fixes upstream aplicados
-- [ ] Confirmar subdominio producción: `agroops.agrom.es` — pendiente DNS Hostinger
+- [x] Confirmar subdominio producción: `agroops.agrom.es` (DNS configurado 14 may, propagación Hostinger en marcha)
 - [ ] CI inicial: lint + typecheck + test (29/29 verde) + build verde — typecheck y tests ya verdes en local, falta GitHub Actions
 - [ ] Pre-commit hooks (lint + typecheck) — pendiente
 - [x] Identity Sprint **v1 aplicada** (12 may 2026) — paleta deep #1B4332 / terra #E07A3C / papel #F4F0E8, Fraunces + IBM Plex Sans/Mono, logo wordmark + favicon M. HU-03 (declarar pantalla productiva) desbloqueada. [Identity v0.2 ecosistema FitoLink aplicada 13 may 2026; dominio rectificado final a `agroops.agrom.es` 14 may 2026 — coherente con herencia AgroM matriz.]
-- [ ] Provisionar servidor de producción + Caddy + DNS — pendiente
+- [x] **Provisionar servidor de producción + nginx + DNS** ✅ 14 may 2026 — Servidor 2 (187.77.71.102, Hostinger compartido con FitoLink/SkyPro/Ottoia). Stack arriba en `/opt/apps/agroops/` con docker-compose. nginx server block instalado + reloaded. **certbot pendiente DNS propagación** (Hostinger latente >30min, no bloqueante). Ver `tasks/handover-2026-05-14.md` para reanudación.
 
 ---
 
@@ -110,6 +110,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 
 ## Sprint 5 — Hardening + primera operación real (1 semana) 🟡 EN CURSO
 
+- [x] **Primer deploy productivo Servidor 2** ✅ 14 may 2026 — stack levantado en VPS Hostinger compartido. Postgres+PostGIS+Redis healthy, web `agroops-web:latest` healthy, `/api/health` 200 OK E2E vía nginx → web → DB+Redis. nginx server block instalado y reloaded. 5 lecciones nuevas en `tasks/lessons.md` (POSTGRES_PASSWORD hex, middleware api/health, drizzle lazy init Proxy, drizzle-kit CLI non-TTY, Hostinger DNS lag). 2 fixes upstream commiteados (`b149b3e` lazy init db, `1b37647` middleware api/health). Pendiente sólo certbot tras propagación DNS Hostinger (no bloqueante).
 - [x] Identity Sprint **cerrado v0.2** (FitoLink → AgroM → AgroOps · 13 may 2026) — paleta brand-*/terra-*/earth-* espejo de `apps/web/tailwind.config.js` de gutierrezbj/fitolink. Tipografía Instrument Serif + DM Sans + IBM Plex Mono. v0.1 efímero (Fraunces + deep #1B4332) eliminado tras decisión JuanCho. Regla `CRITICAL_no_inventar.md` copiada a memoria AgroOps.
 - [~] Distinctiveness Audit — **base aplicada 13 may 2026** ✅: shell global `/dashboard/layout.tsx` con `DashboardHeader` (logo wordmark + nav primaria con active state border-bottom terra + UserChip con rol-pill colorizado + logout) + `DashboardFooter` (tagline + paraguas Drovinci + version build). Componente `EmptyState` reutilizable con copy AgroOps aplicado en `/dashboard/missions` y `/dashboard/clients`. Refactor `/dashboard` home con hero + tarjetas agrupadas por dominio (Operación / Recursos / Cumplimiento). Checklist documentado en CLAUDE.md sección "Distinctiveness Audit checklist (Sprint 5)" — 5 bloques de criterios objetivos para auditar futuras pantallas. **Falta** repasar `/dashboard/parcels`, `/dashboard/fleet/*`, `/dashboard/phytosanitary`, `/dashboard/missions/[id]`, `/dashboard/audit-log` contra el checklist.
 - [~] E2E críticos Playwright — **Fase A 13 may 2026** ✅: `playwright.config.ts` con webServer auto, 4 suites (auth + health + field-notebook + dashboard-shell smoke de 11 pantallas), GitHub Action `.github/workflows/e2e.yml` con services PostGIS+Redis, scripts `pnpm e2e` / `pnpm e2e:ui` / `pnpm e2e:install`. Falta Fase B con flow completo crear→completar misión + firma albarán (requiere fixtures de DB).
