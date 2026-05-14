@@ -114,8 +114,24 @@ Cronograma SDD-08: **9 semanas v1.0** (Sprint 0 + 5 sprints).
 
 ## Despliegue
 
-- **Sin staging.** Mac local → push a `main` → CI verde → deploy automático a producción.
+- **Sin staging.** Mac local → push a `main` → `./scripts/deploy.sh` (SSH) → producción VPS Hostinger.
 - **Dominio:** `agroops.systemrapid.io` (staging + operación interna AgroM). `app.agroops.es` queda reservado para producción comercial futura (ADR-10 naming AgroOps producto independiente).
+- **VPS:** Hostinger compartido con FitoLink (mismo nginx, mismo Let's Encrypt). Puertos SRS offset +170: Postgres `127.0.0.1:6170`, Redis `127.0.0.1:6171`, Next.js `127.0.0.1:3170`. nginx proxy_pass HTTPS.
+
+**Artefactos productivos:**
+- `Dockerfile` — Next 16 standalone multi-stage (imagen ~150MB).
+- `docker-compose.prod.yml` — Postgres+PostGIS + Redis + web bindeados a localhost.
+- `.env.production.example` — plantilla con todas las env vars (AEMET, ENAIRE, Telegram, S3 backup).
+- `scripts/deploy.sh` — deploy idempotente SSH con snapshot DB pre-deploy + healthcheck post-deploy + notificación Telegram.
+- `docs/nginx-agroops.conf` — server block para `/etc/nginx/sites-available/`.
+- `docs/deploy-runbook.md` — runbook completo paso a paso (primer deploy + deploys subsiguientes + rollback + troubleshooting).
+
+**Primer deploy:** seguir `docs/deploy-runbook.md` sección "Checklist pre-primer-deploy".
+**Deploys subsiguientes:** `AGROOPS_SSH_HOST=user@vps.systemrapid.io ./scripts/deploy.sh`.
+
+**Disciplina pre-merge:** 0 errores TS, 0 ESLint errors, e2e críticos verdes, migraciones reversibles.
+**Pre-deploy:** snapshot DB automático (incluido en `deploy.sh`).
+**Post-deploy:** healthcheck `/api/health` verificado (rollback manual si falla) + Telegram OK.
 
 ---
 
