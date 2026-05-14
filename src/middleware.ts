@@ -19,11 +19,13 @@ export const config = {
     /*
      * Match todo excepto:
      * - api/auth (Auth.js handlers)
+     * - api/health (healthcheck público — Docker HEALTHCHECK + Uptime Robot
+     *   externo; debe responder 200/503 sin auth. CLAUDE.md HU-25.)
      * - _next/static (Next assets)
      * - _next/image (Next image optimizer)
      * - favicon.ico
      * - cualquier archivo con extensión (assets públicos)
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.).*)",
+    "/((?!api/auth|api/health|_next/static|_next/image|favicon.ico|.*\\.).*)",
   ],
 };
