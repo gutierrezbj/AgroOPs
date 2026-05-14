@@ -115,7 +115,7 @@ Cronograma SDD-08: **9 semanas v1.0** (Sprint 0 + 5 sprints).
 ## Despliegue
 
 - **Sin staging.** Mac local → push a `main` → `./scripts/deploy.sh` (SSH) → producción VPS Hostinger.
-- **Dominio:** `agroops.systemrapid.io` (staging + operación interna AgroM). `app.agroops.es` queda reservado para producción comercial futura (ADR-10 naming AgroOps producto independiente).
+- **Dominio:** `agroops.agrom.es` (operación productiva AgroM). Coherente con la cadena de herencia del ecosistema FitoLink → AgroM → AgroOps: AgroOps es la herramienta de operaciones de AgroM, vive bajo el dominio de la matriz. La marca producto sigue siendo AgroOps (ADR-10) pero el subdominio operativo es `agroops.agrom.es`.
 - **VPS:** Hostinger compartido con FitoLink (mismo nginx, mismo Let's Encrypt). Puertos SRS offset +170: Postgres `127.0.0.1:6170`, Redis `127.0.0.1:6171`, Next.js `127.0.0.1:3170`. nginx proxy_pass HTTPS.
 
 **Artefactos productivos:**

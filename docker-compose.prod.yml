@@ -3,7 +3,7 @@
 #
 # Patrón inspirado en FitoLink prod (mismo VPS): app web bindeada a
 # localhost, nginx del host actúa como reverse proxy + Let's Encrypt TLS
-# para `agroops.systemrapid.io`.
+# para `agroops.agrom.es`.
 #
 # Servicios:
 #   postgres    Postgres 16 + PostGIS 3.4 (puerto SRS 6170)
@@ -59,7 +59,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-AgroOps}
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://agroops.systemrapid.io}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://agroops.agrom.es}
     image: agroops-web:latest
     container_name: agroops-web
     restart: unless-stopped
@@ -74,7 +74,7 @@ services:
       REDIS_URL: redis://redis:6379
       # Auth.js
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required (openssl rand -base64 32)}
-      AUTH_URL: ${AUTH_URL:-https://agroops.systemrapid.io}
+      AUTH_URL: ${AUTH_URL:-https://agroops.agrom.es}
       # Integraciones reales (pegar API keys en .env.production)
       AEMET_API_KEY: ${AEMET_API_KEY:-}
       ENAIRE_NOTAM_FEED: ${ENAIRE_NOTAM_FEED:-}

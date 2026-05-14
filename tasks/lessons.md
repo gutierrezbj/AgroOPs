@@ -14,6 +14,16 @@ Formato por entrada:
 
 ---
 
+## 2026-05-14 · Dominio AgroOps rectificado a `agroops.agrom.es` (coherente con herencia ecosistema)
+
+**Contexto:** preparación primer deploy productivo a VPS Hostinger. Auditoría reveló 12 archivos con `agroops.systemrapid.io` (residuos del intento Identity v0.2 del 13-may) vs el subdominio histórico `agroops.agrom.es` mencionado en SETUP.md / README / notion-staging del Sprint 0.
+**Qué se descubrió:** la rectificación que hice el 13-may (`agroops.agrom.es` → `agroops.systemrapid.io`) NO era correcta. JuanCho confirma el 14-may que AgroOps va bajo `agrom.es` por la cadena de herencia del ecosistema: AgroM es la empresa matriz, FitoLink y AgroOps son SUS herramientas. Igual que FitoLink hereda paleta/tipografía de AgroM, AgroOps hereda el dominio matriz. Es coherente con la cadena `FitoLink → AgroM → AgroOps` documentada en Identity v0.2.
+**Solución / patrón adoptado:** dominio productivo final `agroops.agrom.es`. La marca producto sigue siendo independiente (ADR-10: AgroOps producto, AgroM operador), pero el subdominio operativo refleja que AgroOps es **la herramienta de operaciones de AgroM**, viviendo en su dominio. Migración global aplicada a `.env.example`, `.env.production.example`, `docker-compose.prod.yml`, `Dockerfile`, `scripts/deploy.sh`, `docs/nginx-agroops.conf`, `docs/deploy-runbook.md`, `tasks/lessons.md`. Referencias históricas en CLAUDE.md / todo.md / ADR-10 mantienen contexto "rectificado tras intento previo".
+**Lección general:** la marca producto y el dominio operativo NO tienen que coincidir literalmente. Lo importante es que el dominio refleje la **propiedad operativa** (quien lo opera, quien factura), no la marca abstracta. AgroOps puede llamarse AgroOps en UI/contratos sin estar en `agroops.es` — basta con que viva donde lo opera AgroM. Patrón replicable cuando una empresa matriz despliega multiples productos.
+**Referencia:** commit con migración global del 14-may-2026. Si en futuro vuelve a cambiarse, mantener este historial intacto y añadir nueva entrada — NO sobrescribir.
+
+---
+
 ## 2026-05-11 · SDD cerrados antes de tocar código
 
 **Contexto:** kickoff de AgroOps.
@@ -296,7 +306,7 @@ También existe `!reset` para borrar una propiedad y empezar de cero. `!override
 **Contexto:** HU-25 `/api/health`. Decidir: ¿requiere auth? ¿qué HTTP status devolver para "operativo pero AEMET no configurado"?
 **Qué se decidió:** público sin auth. Los healthcheckers externos (Telegram cron, Uptime Robot, load balancer del proveedor cloud) no pueden manejar sesiones de Auth.js. La info devuelta es agregada (`status`, `version`, `uptime`, `checks[]`) sin secretos: si una integración no está configurada, decimos "Holded no configurado — facturación deshabilitada" sin exponer la API key. HTTP status binario: 503 si DB o Redis caídos (no operativo); 200 en cualquier otro caso, con `status: "degraded"` en el JSON si alguna integración opcional falta. Esto permite distinguir "down" (necesita acción urgente) de "degraded" (configuración pendiente, no urgente) sin saturar al operador.
 **Solución / patrón adoptado:** cada check devuelve `{ name, status: ok|degraded|down, configured: bool, message?, latencyMs? }`. El agregado `runHealthCheck()` aplica reglas: DB/Redis down → status="down"; cualquier degraded → status="degraded"; todo verde → "ok". Patrón replicable cuando añadamos checks futuros (DroneHub v1.1, FitoLink v1.2). El endpoint reserva el HTTP 503 solo para "no operativo".
-**Referencia:** `src/server/observability/health.ts`, `src/app/api/health/route.ts`. En Sprint 5, configurar Uptime Robot apuntando a `https://agroops.systemrapid.io/api/health` con escalado a Telegram si 503 persiste >5 min.
+**Referencia:** `src/server/observability/health.ts`, `src/app/api/health/route.ts`. En Sprint 5, configurar Uptime Robot apuntando a `https://agroops.agrom.es/api/health` con escalado a Telegram si 503 persiste >5 min.
 
 ---
 

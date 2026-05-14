@@ -1,7 +1,7 @@
 # AgroOps — Runbook de despliegue a producción
 
 **Última actualización:** 14-may-2026
-**Target:** `agroops.systemrapid.io` en VPS Hostinger (mismo VPS que FitoLink)
+**Target:** `agroops.agrom.es` en VPS Hostinger (mismo VPS que FitoLink)
 
 ---
 
@@ -18,7 +18,7 @@ Esto se hace **UNA VEZ**. Después, deploys subsiguientes son `./scripts/deploy.
 
 ### 1. DNS
 
-Apuntar `agroops.systemrapid.io` (A record) al IP del VPS. Hostinger panel DNS:
+Apuntar `agroops.agrom.es` (A record) al IP del VPS. Hostinger panel DNS:
 
 ```
 Tipo  Nombre               Valor              TTL
@@ -28,7 +28,7 @@ A     agroops              <IP_VPS>           3600
 Esperar propagación (5-30 min). Verificar:
 
 ```bash
-dig +short agroops.systemrapid.io
+dig +short agroops.agrom.es
 # Debe devolver el IP del VPS
 ```
 
@@ -67,15 +67,15 @@ Rellenar **TODAS** las variables marcadas `__...__`:
 Copiar el snippet:
 
 ```bash
-sudo cp /opt/agroops/docs/nginx-agroops.conf /etc/nginx/sites-available/agroops.systemrapid.io.conf
-sudo ln -s /etc/nginx/sites-available/agroops.systemrapid.io.conf /etc/nginx/sites-enabled/
+sudo cp /opt/agroops/docs/nginx-agroops.conf /etc/nginx/sites-available/agroops.agrom.es.conf
+sudo ln -s /etc/nginx/sites-available/agroops.agrom.es.conf /etc/nginx/sites-enabled/
 sudo nginx -t                # debe pasar sin errores
 ```
 
 ### 5. Let's Encrypt cert
 
 ```bash
-sudo certbot --nginx -d agroops.systemrapid.io
+sudo certbot --nginx -d agroops.agrom.es
 # Confirma email + acepta T&C. Certbot añade la config TLS al server block.
 sudo nginx -s reload
 ```
@@ -118,7 +118,7 @@ Password seed default: `agroops-dev-2026` (configurable via `SEED_ADMIN_PASSWORD
 
 ### 8. Verificación end-to-end
 
-1. Abrir `https://agroops.systemrapid.io/login` desde browser
+1. Abrir `https://agroops.agrom.es/login` desde browser
 2. Login con `juancho@systemrapid.io` / password seed
 3. Ir a `/dashboard/map` → verificar que los tiles CARTO Voyager cargan
 4. Si AEMET key está configurada: crear misión draft con parcela, transitar a `approved → preflight` → verificar que `weatherSnapshot` se captura con `flightSuitable` real (no stub)

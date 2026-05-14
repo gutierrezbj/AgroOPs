@@ -21,7 +21,7 @@ Leyenda: `[ ]` pendiente · `[~]` en curso · `[x]` cerrada · `[!]` bloqueada
 - [ ] Confirmar subdominio producción: `agroops.agrom.es` — pendiente DNS Hostinger
 - [ ] CI inicial: lint + typecheck + test (29/29 verde) + build verde — typecheck y tests ya verdes en local, falta GitHub Actions
 - [ ] Pre-commit hooks (lint + typecheck) — pendiente
-- [x] Identity Sprint **v1 aplicada** (12 may 2026) — paleta deep #1B4332 / terra #E07A3C / papel #F4F0E8, Fraunces + IBM Plex Sans/Mono, logo wordmark + favicon M, dominio rectificado a `agroops.systemrapid.io`. HU-03 (declarar pantalla productiva) desbloqueada.
+- [x] Identity Sprint **v1 aplicada** (12 may 2026) — paleta deep #1B4332 / terra #E07A3C / papel #F4F0E8, Fraunces + IBM Plex Sans/Mono, logo wordmark + favicon M. HU-03 (declarar pantalla productiva) desbloqueada. [Identity v0.2 ecosistema FitoLink aplicada 13 may 2026; dominio rectificado final a `agroops.agrom.es` 14 may 2026 — coherente con herencia AgroM matriz.]
 - [ ] Provisionar servidor de producción + Caddy + DNS — pendiente
 
 ---

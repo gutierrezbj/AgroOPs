@@ -167,7 +167,7 @@ Resumen de los 10 ADRs vigentes. Todos cerrados antes del Sprint 0. Versión viv
 
 **Consecuencias:**
 - Permite vender a segundo operador sin renaming.
-- Marca y dominio separados (`agroops.systemrapid.io` vs `agrom.es`).
+- Marca producto independiente (AgroOps) bajo dominio operativo de la matriz: `agroops.agrom.es`. Coherente con ecosistema FitoLink → AgroM → AgroOps. [Actualizado 14-may-2026: rectificación tras intento previo en `agroops.systemrapid.io` v0.2.]
 
 **Alternativas descartadas:** Llamar al producto "AgroM Suite" (lock-in al primer cliente).
 

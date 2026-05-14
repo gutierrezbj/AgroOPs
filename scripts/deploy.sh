@@ -5,7 +5,7 @@
 # Flujo idempotente vía SSH. Asume:
 #  - El repo está clonado en /opt/agroops en el VPS
 #  - El VPS tiene Docker + Docker Compose instalados
-#  - El VPS tiene nginx con server block para agroops.systemrapid.io
+#  - El VPS tiene nginx con server block para agroops.agrom.es
 #    apuntando a 127.0.0.1:3170 (ver docs/nginx-agroops.conf)
 #  - El VPS tiene /opt/agroops/.env.production con todas las env vars
 #    (AUTH_SECRET, POSTGRES_PASSWORD, AEMET_API_KEY, etc.)
@@ -142,4 +142,4 @@ if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
     -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"✓ AgroOps deploy OK · sha ${LOCAL_SHA} · $(date -u '+%Y-%m-%d %H:%M UTC')\"}" >/dev/null
 fi
 
-log "✓ Deploy completado: https://agroops.systemrapid.io (sha ${LOCAL_SHA})"
+log "✓ Deploy completado: https://agroops.agrom.es (sha ${LOCAL_SHA})"

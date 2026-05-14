@@ -27,7 +27,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build-time public vars (las runtime van en compose env)
 ARG NEXT_PUBLIC_APP_NAME=AgroOps
-ARG NEXT_PUBLIC_APP_URL=https://agroops.systemrapid.io
+ARG NEXT_PUBLIC_APP_URL=https://agroops.agrom.es
 ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
